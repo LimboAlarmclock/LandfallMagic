@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "landfallmagic:block/order_node"
+    }
+  }
+}

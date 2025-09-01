@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "landfallmagic:block/dormant_fire_node"
+    }
+  }
+}

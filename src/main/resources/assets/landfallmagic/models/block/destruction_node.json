@@ -1,0 +1,10 @@
+{
+  "format_version": "1.21.6",
+  "credit": "Made with Blockbench",
+  "parent": "minecraft:block/cube_all",
+  "texture_size": [16, 16],
+  "textures": {
+    "all": "landfallmagic:block/destruction_node",
+    "particle": "landfallmagic:block/destruction_node"
+  }
+}

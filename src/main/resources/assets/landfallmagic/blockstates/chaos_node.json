@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "landfallmagic:block/chaos_node"
+    }
+  }
+}

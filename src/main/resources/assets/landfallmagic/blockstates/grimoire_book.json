@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "open=false": {
+      "model": "landfallmagic:block/grimoire_book"
+    },
+    "open=true": {
+      "model": "landfallmagic:block/grimoire_book_open"
+    }
+  }
+}

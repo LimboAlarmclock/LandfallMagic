@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "landfallmagic:block/dormant_water_node"
+    }
+  }
+}
