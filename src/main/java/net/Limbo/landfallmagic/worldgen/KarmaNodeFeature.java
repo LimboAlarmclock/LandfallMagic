@@ -13,6 +13,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,46 +29,35 @@ public class KarmaNodeFeature extends Feature<NoneFeatureConfiguration> {
         BlockPos origin = context.origin();
         RandomSource random = context.random();
 
+        // Check if world generation is enabled
         if (!net.Limbo.landfallmagic.Config.ENABLE_KARMA_NODE_GENERATION.get()) {
             return false;
         }
 
+        // Get biome at this location
         ResourceKey<Biome> biomeKey = level.getBiome(origin).unwrapKey().orElse(null);
-        if (biomeKey == null) return false;
+        if (biomeKey == null) {
+            return false;
+        }
 
+        // Get spawn info for this biome
         KarmaNodeSpawnInfo spawnInfo = getSpawnInfoForBiome(biomeKey, level, random);
         if (spawnInfo == null) {
             return false;
         }
 
-        if (!isNodeCategoryEnabled(spawnInfo.rarity)) {
-            return false;
-        }
+        // Find a suitable placement location
+        BlockPos potentialPos = findSuitableY(level, origin, random, spawnInfo);
 
-        if (spawnInfo.requiresDistanceFromSpawn) {
-            BlockPos spawnPos = level.getLevel().getSharedSpawnPos();
-            if (origin.distSqr(spawnPos) < 10000 * 10000) { // 10k blocks
-                return false;
+        if (potentialPos != null) {
+            Block nodeBlock = spawnInfo.getNodeBlock();
+            if (nodeBlock != null) {
+                level.setBlock(potentialPos, nodeBlock.defaultBlockState(), 2);
+                net.Limbo.landfallmagic.landfallmagic.LOGGER.info("Placed {} karma node at {}", spawnInfo.karmaType, potentialPos);
+                return true;
             }
         }
 
-        // Try a few random spots in the chunk to find a valid placement
-        for (int i = 0; i < 16; i++) {
-            int x = origin.getX() + random.nextInt(16);
-            int z = origin.getZ() + random.nextInt(16);
-
-            BlockPos potentialPos = findSuitableY(level, new BlockPos(x, 0, z), random, spawnInfo);
-
-            if (potentialPos != null) {
-                Block nodeBlock = spawnInfo.getNodeBlock();
-                if (nodeBlock != null) {
-                    level.setBlock(potentialPos, nodeBlock.defaultBlockState(), 3);
-                    net.Limbo.landfallmagic.landfallmagic.LOGGER.debug("Placed {} karma node at {} in biome {}",
-                            spawnInfo.karmaType, potentialPos, biomeKey.location());
-                    return true;
-                }
-            }
-        }
         return false;
     }
 
@@ -78,21 +68,22 @@ public class KarmaNodeFeature extends Feature<NoneFeatureConfiguration> {
         if (preferSurface) {
             BlockPos surfacePos = level.getHeightmapPos(Heightmap.Types.WORLD_SURFACE_WG, pos);
             if (surfacePos.getY() >= spawnInfo.minY && surfacePos.getY() <= spawnInfo.maxY) {
-                if (level.getBlockState(surfacePos).canBeReplaced() && !level.getBlockState(surfacePos.below()).isAir()) {
+                if (level.isEmptyBlock(surfacePos) && !level.isEmptyBlock(surfacePos.below())) {
                     return surfacePos;
                 }
             }
         }
 
+        // Try underground placement
         for (int y = spawnInfo.maxY; y >= spawnInfo.minY; y--) {
             BlockPos currentPos = new BlockPos(pos.getX(), y, pos.getZ());
             if (level.isEmptyBlock(currentPos) && !level.isEmptyBlock(currentPos.below())) {
                 return currentPos;
             }
         }
+
         return null;
     }
-
     private boolean isNodeCategoryEnabled(NodeRarity rarity) {
         return switch (rarity) {
             case COMMON -> net.Limbo.landfallmagic.Config.ENABLE_COMMON_NODES.get();
@@ -110,7 +101,7 @@ public class KarmaNodeFeature extends Feature<NoneFeatureConfiguration> {
 
         List<KarmaNodeSpawnInfo> possibleSpawns = new ArrayList<>();
 
-        if (isOverworld && (biomeName.contains("desert") || biomeName.contains("badlands")) || isNether) {
+        if ((isOverworld && (biomeName.contains("desert") || biomeName.contains("badlands"))) || isNether) {
             possibleSpawns.add(new KarmaNodeSpawnInfo(KarmaType.FIRE, NodeRarity.COMMON, isNether ? 0 : 50, isNether ? 128 : 120, true, false));
         }
         if (isOverworld && (biomeName.contains("ocean") || biomeName.contains("river") || biomeName.contains("swamp"))) {
@@ -147,7 +138,6 @@ public class KarmaNodeFeature extends Feature<NoneFeatureConfiguration> {
 
         return possibleSpawns.get(random.nextInt(possibleSpawns.size()));
     }
-
     public enum NodeRarity {
         COMMON, UNCOMMON, RARE, MYTHIC
     }

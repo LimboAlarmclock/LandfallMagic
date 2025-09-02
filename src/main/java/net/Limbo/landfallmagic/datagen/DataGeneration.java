@@ -12,17 +12,11 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.data.DatapackBuiltinEntriesProvider;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
-
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 @EventBusSubscriber(modid = landfallmagic.MODID, bus = EventBusSubscriber.Bus.MOD)
 public class DataGeneration {
-
-    private static final RegistrySetBuilder BUILDER = new RegistrySetBuilder()
-            .add(Registries.CONFIGURED_FEATURE, BiomeModifications::bootstrapConfiguredFeatures)
-            .add(Registries.PLACED_FEATURE, BiomeModifications::bootstrapPlacedFeatures)
-            .add(NeoForgeRegistries.Keys.BIOME_MODIFIERS, BiomeModifications::bootstrapBiomeModifiers);
 
     @SubscribeEvent
     public static void gatherData(GatherDataEvent event) {
@@ -30,8 +24,12 @@ public class DataGeneration {
         PackOutput packOutput = generator.getPackOutput();
         CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();
 
-        // Add worldgen data provider
+        RegistrySetBuilder builder = new RegistrySetBuilder()
+                .add(Registries.CONFIGURED_FEATURE, BiomeModifications::bootstrapConfiguredFeatures)
+                .add(Registries.PLACED_FEATURE, BiomeModifications::bootstrapPlacedFeatures)
+                .add(NeoForgeRegistries.Keys.BIOME_MODIFIERS, BiomeModifications::bootstrapBiomeModifiers);
+
         generator.addProvider(event.includeServer(), new DatapackBuiltinEntriesProvider(
-                packOutput, lookupProvider, BUILDER, Set.of(landfallmagic.MODID)));
+                packOutput, lookupProvider, builder, Set.of(landfallmagic.MODID)));
     }
 }
