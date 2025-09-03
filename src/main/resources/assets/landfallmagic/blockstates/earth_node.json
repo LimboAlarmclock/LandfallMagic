@@ -1,6 +1,9 @@
 {
   "variants": {
-    "": {
+    "initialized=false": {
+      "model": "landfallmagic:block/earth_node"
+    },
+    "initialized=true": {
       "model": "landfallmagic:block/earth_node"
     }
   }

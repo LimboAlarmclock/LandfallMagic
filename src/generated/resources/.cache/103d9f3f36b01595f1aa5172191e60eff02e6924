@@ -1,0 +1,6 @@
+// 1.21.1	2025-09-02T16:48:37.1479631	Registries
+af8ae82fec985c6a2ec5fbdb05f616e78a2647ad data/landfallmagic/neoforge/biome_modifier/add_karma_nodes_end.json
+9915f17c3f30335ba4d6f2424aef6541bdc447c0 data/landfallmagic/neoforge/biome_modifier/add_karma_nodes_nether.json
+c10f2a06de9494b7b070dd10a3d1316580a96d65 data/landfallmagic/neoforge/biome_modifier/add_karma_nodes_overworld.json
+f8226c8d37adcf7367f63f466e5127f4727d2775 data/landfallmagic/worldgen/configured_feature/karma_node.json
+1f9d477ce7e487ddcd17338d0173d63f3991ead8 data/landfallmagic/worldgen/placed_feature/karma_node.json

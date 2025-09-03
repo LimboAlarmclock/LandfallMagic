@@ -13,6 +13,9 @@
   "block.landfallmagic.research_table": "Research Table",
   "block.landfallmagic.karma_condenser": "Karma Condenser",
   "block.landfallmagic.grimoire_book": "Grimoire",
+  "block.landfallmagic.karma_furnace": "Karma Furnace",
+  "block.landfallmagic.arcane_altar": "Arcane Altar",
+  "block.landfallmagic.ritual_altar": "Ritual Altar",
 
   "gui.landfallmagic.research_table.title": "Arcane Research Interface",
   "gui.landfallmagic.research_table.karma_analysis": "Karma Field Analysis",

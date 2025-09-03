@@ -3,15 +3,19 @@ package net.Limbo.landfallmagic;
 import com.mojang.logging.LogUtils;
 import net.Limbo.landfallmagic.karma.KarmaCapability;
 import net.Limbo.landfallmagic.karma.KarmaCommands;
+import net.Limbo.landfallmagic.karma.KarmaNodeBlock;
 import net.Limbo.landfallmagic.network.C2SKarmaRequestPacket;
 import net.Limbo.landfallmagic.network.S2CKarmaUpdatePacket;
-import net.Limbo.landfallmagic.worldgen.ModFeatures; // <-- CORRECT IMPORT
+import net.Limbo.landfallmagic.worldgen.ModFeatures;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
@@ -41,6 +45,14 @@ public class landfallmagic {
                     .withTabsBefore(CreativeModeTabs.COMBAT)
                     .icon(() -> ModBlocks.DARK_NODE_ITEM.get().getDefaultInstance())
                     .displayItems((parameters, output) -> {
+                        // Utility & Functional Blocks
+                        output.accept(ModBlocks.KARMA_FURNACE_ITEM.get());
+                        output.accept(ModBlocks.ARCANE_ALTAR_ITEM.get());
+                        output.accept(ModBlocks.RITUAL_ALTAR_ITEM.get());
+                        output.accept(ModBlocks.RESEARCH_TABLE_ITEM.get());
+                        output.accept(ModBlocks.KARMA_CONDENSER_ITEM.get());
+                        output.accept(ModBlocks.GRIMOIRE_BOOK_ITEM.get());
+                        // Karma Nodes
                         output.accept(ModBlocks.FIRE_NODE_ITEM.get());
                         output.accept(ModBlocks.WATER_NODE_ITEM.get());
                         output.accept(ModBlocks.EARTH_NODE_ITEM.get());
@@ -51,27 +63,19 @@ public class landfallmagic {
                         output.accept(ModBlocks.CHAOS_NODE_ITEM.get());
                         output.accept(ModBlocks.CREATION_NODE_ITEM.get());
                         output.accept(ModBlocks.DESTRUCTION_NODE_ITEM.get());
-                        output.accept(ModBlocks.DORMANT_FIRE_NODE_ITEM.get());
-                        output.accept(ModBlocks.DORMANT_WATER_NODE_ITEM.get());
-                        output.accept(ModBlocks.DORMANT_EARTH_NODE_ITEM.get());
-                        output.accept(ModBlocks.DORMANT_AIR_NODE_ITEM.get());
-                        output.accept(ModBlocks.DORMANT_LIGHT_NODE_ITEM.get());
-                        output.accept(ModBlocks.DORMANT_DARK_NODE_ITEM.get());
-                        output.accept(ModBlocks.DORMANT_ORDER_NODE_ITEM.get());
-                        output.accept(ModBlocks.DORMANT_CHAOS_NODE_ITEM.get());
-                        output.accept(ModBlocks.DORMANT_CREATION_NODE_ITEM.get());
-                        output.accept(ModBlocks.DORMANT_DESTRUCTION_NODE_ITEM.get());
-                        output.accept(ModBlocks.RESEARCH_TABLE_ITEM.get());
-                        output.accept(ModBlocks.KARMA_CONDENSER_ITEM.get());
-                        output.accept(ModBlocks.GRIMOIRE_BOOK_ITEM.get());
+                        // Add all the new items from ModItems to the tab
+                        ModItems.ITEMS.getEntries().forEach(item -> output.accept(item.get()));
                     }).build());
 
     public landfallmagic(IEventBus modEventBus, ModContainer modContainer) {
         modEventBus.addListener(this::commonSetup);
 
+        // --- ADDED ModItems REGISTRATION ---
+        ModItems.ITEMS.register(modEventBus);
+
         ModBlocks.BLOCKS.register(modEventBus);
         ModBlocks.ITEMS.register(modEventBus);
-        ModFeatures.FEATURES.register(modEventBus); // <-- This now works because the import is correct
+        ModFeatures.FEATURES.register(modEventBus);
         CREATIVE_MODE_TABS.register(modEventBus);
 
         modEventBus.addListener(this::registerPackets);
@@ -103,7 +107,7 @@ public class landfallmagic {
     }
 
     @SubscribeEvent
-    public void onChunkLoad(ChunkEvent.Load event) {
+    public void onChunkLoadUpdatePlayers(ChunkEvent.Load event) {
         if (!event.getLevel().isClientSide()) {
             ChunkPos pos = event.getChunk().getPos();
             event.getLevel().players().forEach(player -> {
@@ -114,6 +118,26 @@ public class landfallmagic {
                     }
                 }
             });
+        }
+    }
+
+    @SubscribeEvent
+    public void onChunkLoadActivateNodes(ChunkEvent.Load event) {
+        if (event.getLevel() instanceof ServerLevel serverLevel) {
+            final ChunkPos chunkPos = event.getChunk().getPos();
+            new Thread(() -> {
+                for (BlockPos pos : BlockPos.betweenClosed(
+                        chunkPos.getMinBlockX(), serverLevel.getMinBuildHeight(), chunkPos.getMinBlockZ(),
+                        chunkPos.getMaxBlockX(), serverLevel.getMaxBuildHeight(), chunkPos.getMaxBlockZ()
+                )) {
+                    BlockState state = event.getChunk().getBlockState(pos);
+                    if (state.getBlock() instanceof KarmaNodeBlock && !state.getValue(KarmaNodeBlock.INITIALIZED)) {
+                        serverLevel.scheduleTick(new BlockPos(pos), state.getBlock(), Config.NODE_TICK_DELAY.get());
+                        serverLevel.setBlock(pos, state.setValue(KarmaNodeBlock.INITIALIZED, true), 3);
+                        LOGGER.info("Activated naturally spawned Karma Node at {}", pos);
+                    }
+                }
+            }).start();
         }
     }
 

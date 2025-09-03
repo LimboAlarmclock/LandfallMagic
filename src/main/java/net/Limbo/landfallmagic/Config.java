@@ -48,7 +48,7 @@ public class Config {
 
         PARTICLE_INTENSITY_MULTIPLIER = BUILDER
                 .comment("Multiplier for particle generation intensity (higher = more particles).")
-                .defineInRange("particleIntensityMultiplier", 1.0, 0.0, 5.0);
+                .defineInRange("particleIntensityMultiplier", .5, 0.0, 5.0);
 
         // Karma reset settings
         ENABLE_KARMA_RESET_COMMAND = BUILDER

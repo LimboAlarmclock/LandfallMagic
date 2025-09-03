@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "landfallmagic:block/ritual_altar_block"
+    }
+  }
+}

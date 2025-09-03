@@ -1,6 +1,9 @@
 {
   "variants": {
-    "": {
+    "initialized=false": {
+      "model": "landfallmagic:block/chaos_node"
+    },
+    "initialized=true": {
       "model": "landfallmagic:block/chaos_node"
     }
   }

@@ -9,6 +9,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
@@ -29,30 +30,35 @@ public class KarmaNodeFeature extends Feature<NoneFeatureConfiguration> {
         BlockPos origin = context.origin();
         RandomSource random = context.random();
 
-        // Check if world generation is enabled
         if (!net.Limbo.landfallmagic.Config.ENABLE_KARMA_NODE_GENERATION.get()) {
             return false;
         }
 
-        // Get biome at this location
         ResourceKey<Biome> biomeKey = level.getBiome(origin).unwrapKey().orElse(null);
         if (biomeKey == null) {
             return false;
         }
 
-        // Get spawn info for this biome
         KarmaNodeSpawnInfo spawnInfo = getSpawnInfoForBiome(biomeKey, level, random);
         if (spawnInfo == null) {
             return false;
         }
 
-        // Find a suitable placement location
-        BlockPos potentialPos = findSuitableY(level, origin, random, spawnInfo);
+        // --- UPDATED LOGIC ---
+        // Use special placement for water nodes, and the standard placement for all others.
+        BlockPos potentialPos;
+        if (spawnInfo.karmaType == KarmaType.WATER) {
+            potentialPos = findWaterY(level, origin);
+        } else {
+            potentialPos = findSuitableY(level, origin, random, spawnInfo);
+        }
+        // --- END OF UPDATE ---
 
         if (potentialPos != null) {
             Block nodeBlock = spawnInfo.getNodeBlock();
             if (nodeBlock != null) {
                 level.setBlock(potentialPos, nodeBlock.defaultBlockState(), 2);
+                level.scheduleTick(potentialPos, nodeBlock, net.Limbo.landfallmagic.Config.NODE_TICK_DELAY.get());
                 net.Limbo.landfallmagic.landfallmagic.LOGGER.info("Placed {} karma node at {}", spawnInfo.karmaType, potentialPos);
                 return true;
             }
@@ -61,6 +67,9 @@ public class KarmaNodeFeature extends Feature<NoneFeatureConfiguration> {
         return false;
     }
 
+    /**
+     * Standard placement for land-based and underground nodes.
+     */
     private BlockPos findSuitableY(WorldGenLevel level, BlockPos pos, RandomSource random, KarmaNodeSpawnInfo spawnInfo) {
         double surfaceBias = net.Limbo.landfallmagic.Config.SURFACE_NODE_BIAS.get();
         boolean preferSurface = random.nextDouble() < surfaceBias || spawnInfo.prefersSurface;
@@ -74,16 +83,43 @@ public class KarmaNodeFeature extends Feature<NoneFeatureConfiguration> {
             }
         }
 
-        // Try underground placement
         for (int y = spawnInfo.maxY; y >= spawnInfo.minY; y--) {
             BlockPos currentPos = new BlockPos(pos.getX(), y, pos.getZ());
             if (level.isEmptyBlock(currentPos) && !level.isEmptyBlock(currentPos.below())) {
                 return currentPos;
             }
         }
+        return null;
+    }
+
+    /**
+     * Special placement logic for water nodes to spawn mid-water.
+     */
+    private BlockPos findWaterY(WorldGenLevel level, BlockPos pos) {
+        BlockPos waterSurfacePos = level.getHeightmapPos(Heightmap.Types.WORLD_SURFACE_WG, pos);
+        BlockPos oceanFloorPos = level.getHeightmapPos(Heightmap.Types.OCEAN_FLOOR_WG, pos);
+
+        int waterSurfaceY = waterSurfacePos.getY();
+        int oceanFloorY = oceanFloorPos.getY();
+
+        // Ensure there's at least 6 blocks of water to prevent spawning in shallow puddles
+        if (waterSurfaceY - oceanFloorY < 6) {
+            return null;
+        }
+
+        // Calculate the middle of the water column
+        int targetY = oceanFloorY + (waterSurfaceY - oceanFloorY) / 2;
+        BlockPos potentialPos = new BlockPos(pos.getX(), targetY, pos.getZ());
+
+        // Final check to make sure we're placing it in a water block
+        if (level.getBlockState(potentialPos).is(Blocks.WATER)) {
+            return potentialPos;
+        }
 
         return null;
     }
+
+
     private boolean isNodeCategoryEnabled(NodeRarity rarity) {
         return switch (rarity) {
             case COMMON -> net.Limbo.landfallmagic.Config.ENABLE_COMMON_NODES.get();
