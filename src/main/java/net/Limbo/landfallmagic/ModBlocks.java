@@ -1,21 +1,21 @@
 package net.Limbo.landfallmagic;
 
-import net.Limbo.landfallmagic.blocks.ArcaneAltarBlock;
-import net.Limbo.landfallmagic.blocks.GrimoireBookBlock;
-import net.Limbo.landfallmagic.blocks.KarmaCondenserBlock;
-import net.Limbo.landfallmagic.blocks.KarmaFurnaceBlock;
-import net.Limbo.landfallmagic.blocks.ResearchTableBlock;
-import net.Limbo.landfallmagic.blocks.RitualAltarBlock;
+import net.Limbo.landfallmagic.blocks.*;
+import net.Limbo.landfallmagic.blocks.tree.*;
 import net.Limbo.landfallmagic.karma.KarmaNodeBlock;
 import net.Limbo.landfallmagic.karma.KarmaType;
+import net.Limbo.landfallmagic.worldgen.BiomeModifications;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.grower.TreeGrower;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
+
+import java.util.Optional;
 
 public class ModBlocks {
 
@@ -142,7 +142,6 @@ public class ModBlocks {
     public static final DeferredBlock<Block> GRIMOIRE_BOOK = BLOCKS.register("grimoire_book", GrimoireBookBlock::new);
     public static final DeferredItem<BlockItem> GRIMOIRE_BOOK_ITEM = ITEMS.registerSimpleBlockItem("grimoire_book", GRIMOIRE_BOOK);
 
-    // --- NEW UTILITY BLOCKS ---
     public static final DeferredBlock<Block> KARMA_FURNACE = BLOCKS.register("karma_furnace", KarmaFurnaceBlock::new);
     public static final DeferredItem<BlockItem> KARMA_FURNACE_ITEM = ITEMS.registerSimpleBlockItem("karma_furnace", KARMA_FURNACE);
 
@@ -151,4 +150,27 @@ public class ModBlocks {
 
     public static final DeferredBlock<Block> RITUAL_ALTAR = BLOCKS.register("ritual_altar", RitualAltarBlock::new);
     public static final DeferredItem<BlockItem> RITUAL_ALTAR_ITEM = ITEMS.registerSimpleBlockItem("ritual_altar", RITUAL_ALTAR);
+
+    public static final DeferredBlock<Block> CRYSTAL_CLUSTER = BLOCKS.register("crystal_cluster", CrystalClusterBlock::new);
+    public static final DeferredItem<BlockItem> CRYSTAL_CLUSTER_ITEM = ITEMS.registerSimpleBlockItem("crystal_cluster", CRYSTAL_CLUSTER);
+
+    // --- TREE BLOCKS ---
+    public static final DeferredBlock<Block> ENCHANTED_LOG = BLOCKS.register("enchanted_log", EnchantedLogBlock::new);
+    public static final DeferredItem<BlockItem> ENCHANTED_LOG_ITEM = ITEMS.registerSimpleBlockItem("enchanted_log", ENCHANTED_LOG);
+    public static final DeferredBlock<Block> ENCHANTED_LEAVES = BLOCKS.register("enchanted_leaves", EnchantedLeavesBlock::new);
+    public static final DeferredItem<BlockItem> ENCHANTED_LEAVES_ITEM = ITEMS.registerSimpleBlockItem("enchanted_leaves", ENCHANTED_LEAVES);
+    public static final DeferredBlock<Block> ENCHANTED_SAPLING = BLOCKS.register("enchanted_sapling",
+            () -> new EnchantedSaplingBlock(new TreeGrower("enchanted", Optional.of(BiomeModifications.ENCHANTED_TREE_CONFIGURED), Optional.empty(), Optional.empty())));
+    public static final DeferredItem<BlockItem> ENCHANTED_SAPLING_ITEM = ITEMS.registerSimpleBlockItem("enchanted_sapling", ENCHANTED_SAPLING);
+
+    public static final DeferredBlock<Block> CURSED_LOG = BLOCKS.register("cursed_log", CursedLogBlock::new);
+    public static final DeferredItem<BlockItem> CURSED_LOG_ITEM = ITEMS.registerSimpleBlockItem("cursed_log", CURSED_LOG);
+    public static final DeferredBlock<Block> CURSED_LEAVES = BLOCKS.register("cursed_leaves", CursedLeavesBlock::new);
+    public static final DeferredItem<BlockItem> CURSED_LEAVES_ITEM = ITEMS.registerSimpleBlockItem("cursed_leaves", CURSED_LEAVES);
+    public static final DeferredBlock<Block> CURSED_ROOTS = BLOCKS.register("cursed_roots", CursedRootsBlock::new);
+    public static final DeferredItem<BlockItem> CURSED_ROOTS_ITEM = ITEMS.registerSimpleBlockItem("cursed_roots", CURSED_ROOTS);
+
+    public static final DeferredBlock<Block> CURSED_SAPLING = BLOCKS.register("cursed_sapling",
+            () -> new CursedSaplingBlock(new TreeGrower("cursed", Optional.of(BiomeModifications.CURSED_TREE_CONFIGURED), Optional.empty(), Optional.empty())));
+    public static final DeferredItem<BlockItem> CURSED_SAPLING_ITEM = ITEMS.registerSimpleBlockItem("cursed_sapling", CURSED_SAPLING);
 }

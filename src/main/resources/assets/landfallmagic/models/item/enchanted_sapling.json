@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "landfallmagic:item/enchanted_sapling"
+  }
+}

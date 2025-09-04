@@ -77,4 +77,7 @@ public class ModItems {
     public static final DeferredItem<Item> DISCORD_ALLOY = ITEMS.register("discord_alloy", () -> new Item(new Item.Properties()));
     public static final DeferredItem<Item> STAR_ALLOY = ITEMS.register("star_alloy", () -> new Item(new Item.Properties()));
     public static final DeferredItem<Item> ASHWEAVE = ITEMS.register("ashweave", () -> new Item(new Item.Properties()));
+
+    // --- NEW SAPLING ITEM ---
+
 }

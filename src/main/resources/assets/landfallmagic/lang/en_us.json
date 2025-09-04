@@ -16,6 +16,15 @@
   "block.landfallmagic.karma_furnace": "Karma Furnace",
   "block.landfallmagic.arcane_altar": "Arcane Altar",
   "block.landfallmagic.ritual_altar": "Ritual Altar",
+  "block.landfallmagic.crystal_cluster": "Crystal Cluster",
+  "block.landfallmagic.enchanted_log": "Enchanted Log",
+  "block.landfallmagic.enchanted_leaves": "Enchanted Leaves",
+  "block.landfallmagic.enchanted_sapling": "Enchanted Sapling",
+  "block.landfallmagic.cursed_log": "Cursed Log",
+  "block.landfallmagic.cursed_roots": "Cursed Roots",
+  "block.landfallmagic.cursed_leaves": "Cursed Leaves",
+  "block.landfallmagic.cursed_sapling": "Cursed Sapling",
+
 
   "gui.landfallmagic.research_table.title": "Arcane Research Interface",
   "gui.landfallmagic.research_table.karma_analysis": "Karma Field Analysis",

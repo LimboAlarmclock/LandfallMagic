@@ -63,6 +63,15 @@ public class landfallmagic {
                         output.accept(ModBlocks.CHAOS_NODE_ITEM.get());
                         output.accept(ModBlocks.CREATION_NODE_ITEM.get());
                         output.accept(ModBlocks.DESTRUCTION_NODE_ITEM.get());
+                        // Generation Blocks - Nodes
+                        output.accept(ModBlocks.CRYSTAL_CLUSTER_ITEM.get());
+                        output.accept(ModBlocks.ENCHANTED_LOG_ITEM.get());
+                        output.accept(ModBlocks.ENCHANTED_LEAVES_ITEM.get());
+                        output.accept(ModBlocks.ENCHANTED_SAPLING_ITEM.get());
+                        output.accept(ModBlocks.CURSED_LOG_ITEM.get());
+                        output.accept(ModBlocks.CURSED_LEAVES_ITEM.get());
+                        output.accept(ModBlocks.CURSED_ROOTS_ITEM.get());
+                        output.accept(ModBlocks.CURSED_SAPLING_ITEM.get());
                         // Add all the new items from ModItems to the tab
                         ModItems.ITEMS.getEntries().forEach(item -> output.accept(item.get()));
                     }).build());
