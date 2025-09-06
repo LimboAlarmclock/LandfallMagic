@@ -1,6 +1,7 @@
 package net.Limbo.landfallmagic.worldgen;
 
 import net.Limbo.landfallmagic.ModBlocks;
+import net.Limbo.landfallmagic.ModEntities;
 import net.Limbo.landfallmagic.landfallmagic;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
@@ -11,8 +12,10 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.util.valueproviders.ConstantInt;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
+import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.VerticalAnchor;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
@@ -23,14 +26,13 @@ import net.minecraft.world.level.levelgen.feature.configurations.TreeConfigurati
 import net.minecraft.world.level.levelgen.feature.featuresize.TwoLayersFeatureSize;
 import net.minecraft.world.level.levelgen.feature.foliageplacers.BlobFoliagePlacer;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
+import net.minecraft.world.level.levelgen.feature.trunkplacers.FancyTrunkPlacer;
 import net.minecraft.world.level.levelgen.feature.trunkplacers.StraightTrunkPlacer;
-import net.minecraft.world.level.levelgen.feature.trunkplacers.UpwardsBranchingTrunkPlacer;
 import net.minecraft.world.level.levelgen.placement.*;
 import net.minecraft.world.level.levelgen.structure.templatesystem.BlockMatchTest;
 import net.neoforged.neoforge.common.world.BiomeModifier;
 import net.neoforged.neoforge.common.world.BiomeModifiers;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
-import net.minecraft.world.level.levelgen.feature.trunkplacers.FancyTrunkPlacer;
 
 import java.util.List;
 
@@ -60,6 +62,8 @@ public class BiomeModifications {
     public static final ResourceKey<ConfiguredFeature<?, ?>> CURSED_TREE_CONFIGURED = createKey("cursed_tree");
     public static final ResourceKey<PlacedFeature> CURSED_TREE_PLACED = createPlacedKey("cursed_tree");
 
+    public static final ResourceKey<BiomeModifier> ADD_DIRE_WOLF_SPAWNS = createModifierKey("add_dire_wolf_spawns");
+
 
     public static void bootstrapConfiguredFeatures(BootstrapContext<ConfiguredFeature<?, ?>> context) {
         context.register(KARMA_NODE_CONFIGURED, new ConfiguredFeature<>(ModFeatures.KARMA_NODE_FEATURE.get(), NoneFeatureConfiguration.INSTANCE));
@@ -77,11 +81,9 @@ public class BiomeModifications {
                 new TwoLayersFeatureSize(1, 0, 1)
         ).build()));
 
-        // --- CORRECTED SECTION ---
-        // Replaced the broken UpwardsBranchingTrunkPlacer with FancyTrunkPlacer
         context.register(CURSED_TREE_CONFIGURED, new ConfiguredFeature<>(Feature.TREE, new TreeConfiguration.TreeConfigurationBuilder(
                 BlockStateProvider.simple(ModBlocks.CURSED_LOG.get()),
-                new FancyTrunkPlacer(6, 3, 2), // Creates a nice, irregular tree shape
+                new FancyTrunkPlacer(6, 3, 2),
                 BlockStateProvider.simple(ModBlocks.CURSED_LEAVES.get()),
                 new BlobFoliagePlacer(ConstantInt.of(2), ConstantInt.of(1), 2),
                 new TwoLayersFeatureSize(1, 0, 2)
@@ -103,7 +105,12 @@ public class BiomeModifications {
 
         context.register(ENCHANTED_TREE_PLACED, new PlacedFeature(
                 configuredFeatures.getOrThrow(ENCHANTED_TREE_CONFIGURED),
-                List.of(RarityFilter.onAverageOnceEvery(10), InSquarePlacement.spread(), PlacementUtils.HEIGHTMAP_WORLD_SURFACE, BiomeFilter.biome())
+                List.of(
+                        RarityFilter.onAverageOnceEvery(10),
+                        InSquarePlacement.spread(),
+                        PlacementUtils.HEIGHTMAP_WORLD_SURFACE,
+                        BiomeFilter.biome()
+                )
         ));
 
         context.register(CURSED_TREE_PLACED, new PlacedFeature(
@@ -128,12 +135,15 @@ public class BiomeModifications {
                 GenerationStep.Decoration.VEGETAL_DECORATION
         ));
 
-        // NEW: Add Cursed Trees to swamp biomes
         context.register(createModifierKey("add_cursed_trees"), new BiomeModifiers.AddFeaturesBiomeModifier(
-                // Directly target the SWAMP and MANGROVE_SWAMP biomes
                 HolderSet.direct(biomes.getOrThrow(Biomes.SWAMP), biomes.getOrThrow(Biomes.MANGROVE_SWAMP)),
                 HolderSet.direct(placedFeatures.getOrThrow(CURSED_TREE_PLACED)),
                 GenerationStep.Decoration.VEGETAL_DECORATION
+        ));
+
+        context.register(ADD_DIRE_WOLF_SPAWNS, new BiomeModifiers.AddSpawnsBiomeModifier(
+                biomes.getOrThrow(BiomeTags.IS_TAIGA),
+                List.of(new MobSpawnSettings.SpawnerData(ModEntities.DIRE_WOLF.get(), 10, 2, 4))
         ));
     }
 }
