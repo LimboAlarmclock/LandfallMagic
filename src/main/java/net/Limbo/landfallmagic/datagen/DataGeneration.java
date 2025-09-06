@@ -27,7 +27,8 @@ public class DataGeneration {
         RegistrySetBuilder builder = new RegistrySetBuilder()
                 .add(Registries.CONFIGURED_FEATURE, BiomeModifications::bootstrapConfiguredFeatures)
                 .add(Registries.PLACED_FEATURE, BiomeModifications::bootstrapPlacedFeatures)
-                .add(NeoForgeRegistries.Keys.BIOME_MODIFIERS, BiomeModifications::bootstrapBiomeModifiers);
+                .add(NeoForgeRegistries.Keys.BIOME_MODIFIERS, BiomeModifications::bootstrapBiomeModifiers)
+                .add(Registries.ARMOR_MATERIAL, ModDataGeneration::bootstrap); // <-- ADD THIS LINE
 
         generator.addProvider(event.includeServer(), new DatapackBuiltinEntriesProvider(
                 packOutput, lookupProvider, builder, Set.of(landfallmagic.MODID)));

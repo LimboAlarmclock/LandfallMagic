@@ -91,5 +91,200 @@
   "landfallmagic.configuration.enableTypewriterEffect": "Enable Typewriter Effect",
 
   "command.landfallmagic.locatenode.success": "Found a %s at %s, %s, %s",
-  "command.landfallmagic.locatenode.notfound": "Could not find a %s within a reasonable distance."
+  "command.landfallmagic.locatenode.notfound": "Could not find a %s within a reasonable distance.",
+
+  "item.landfallmagic.verdant_helmet": "Verdant Hood",
+  "item.landfallmagic.verdant_chestplate": "Verdant Robes",
+  "item.landfallmagic.verdant_leggings": "Verdant Trousers",
+  "item.landfallmagic.verdant_boots": "Verdant Boots",
+
+  "item.landfallmagic.wildhide_helmet": "Wildhide Coif",
+  "item.landfallmagic.wildhide_chestplate": "Wildhide Tunic",
+  "item.landfallmagic.wildhide_leggings": "Wildhide Leggings",
+  "item.landfallmagic.wildhide_boots": "Wildhide Boots",
+
+  "item.landfallmagic.stonebark_helmet": "Stonebark Helm",
+  "item.landfallmagic.stonebark_chestplate": "Stonebark Breastplate",
+  "item.landfallmagic.stonebark_leggings": "Stonebark Greaves",
+  "item.landfallmagic.stonebark_boots": "Stonebark Sabatons",
+
+  "item.landfallmagic.arcanist_helmet": "Arcanist's Cowl",
+  "item.landfallmagic.arcanist_chestplate": "Arcanist's Vestments",
+  "item.landfallmagic.arcanist_leggings": "Arcanist's Leggings",
+  "item.landfallmagic.arcanist_boots": "Arcanist's Slippers",
+
+  "item.landfallmagic.spellbinder_helmet": "Spellbinder's Hood",
+  "item.landfallmagic.spellbinder_chestplate": "Spellbinder's Wraps",
+  "item.landfallmagic.spellbinder_leggings": "Spellbinder's Trousers",
+  "item.landfallmagic.spellbinder_boots": "Spellbinder's Boots",
+
+  "item.landfallmagic.runeforged_helmet": "Runeforged Helm",
+  "item.landfallmagic.runeforged_chestplate": "Runeforged Aegis",
+  "item.landfallmagic.runeforged_leggings": "Runeforged Greaves",
+  "item.landfallmagic.runeforged_boots": "Runeforged Sabatons",
+
+  "item.landfallmagic.occult_helmet": "Occult Cowl",
+  "item.landfallmagic.occult_chestplate": "Occult Shroud",
+  "item.landfallmagic.occult_leggings": "Occult Leggings",
+  "item.landfallmagic.occult_boots": "Occult Boots",
+
+  "item.landfallmagic.hexskin_helmet": "Hexskin Mask",
+  "item.landfallmagic.hexskin_chestplate": "Hexskin Garb",
+  "item.landfallmagic.hexskin_leggings": "Hexskin Leggings",
+  "item.landfallmagic.hexskin_boots": "Hexskin Boots",
+
+  "item.landfallmagic.bloodforged_helmet": "Bloodforged Helm",
+  "item.landfallmagic.bloodforged_chestplate": "Bloodforged Mail",
+  "item.landfallmagic.bloodforged_leggings": "Bloodforged Greaves",
+  "item.landfallmagic.bloodforged_boots": "Bloodforged Sabatons",
+
+  "item.landfallmagic.emberweave_helmet": "Emberweave Hood",
+  "item.landfallmagic.emberweave_chestplate": "Emberweave Robes",
+  "item.landfallmagic.emberweave_leggings": "Emberweave Trousers",
+  "item.landfallmagic.emberweave_boots": "Emberweave Boots",
+
+  "item.landfallmagic.ashenhide_helmet": "Ashenhide Hood",
+  "item.landfallmagic.ashenhide_chestplate": "Ashenhide Tunic",
+  "item.landfallmagic.ashenhide_leggings": "Ashenhide Leggings",
+  "item.landfallmagic.ashenhide_boots": "Ashenhide Boots",
+
+  "item.landfallmagic.inferno_helmet": "Inferno Helm",
+  "item.landfallmagic.inferno_chestplate": "Inferno Guard",
+  "item.landfallmagic.inferno_leggings": "Inferno Greaves",
+  "item.landfallmagic.inferno_boots": "Inferno Sabatons",
+
+  "item.landfallmagic.tidecaller_helmet": "Tidecaller's Cowl",
+  "item.landfallmagic.tidecaller_chestplate": "Tidecaller's Robes",
+  "item.landfallmagic.tidecaller_leggings": "Tidecaller's Leggings",
+  "item.landfallmagic.tidecaller_boots": "Tidecaller's Boots",
+
+  "item.landfallmagic.brinehide_helmet": "Brinehide Cap",
+  "item.landfallmagic.brinehide_chestplate": "Brinehide Jerkin",
+  "item.landfallmagic.brinehide_leggings": "Brinehide Leggings",
+  "item.landfallmagic.brinehide_boots": "Brinehide Boots",
+
+  "item.landfallmagic.leviathan_helmet": "Leviathan Helm",
+  "item.landfallmagic.leviathan_chestplate": "Leviathan Shell",
+  "item.landfallmagic.leviathan_leggings": "Leviathan Greaves",
+  "item.landfallmagic.leviathan_boots": "Leviathan Sabatons",
+
+  "item.landfallmagic.stoneveil_helmet": "Stoneveil Hood",
+  "item.landfallmagic.stoneveil_chestplate": "Stoneveil Robes",
+  "item.landfallmagic.stoneveil_leggings": "Stoneveil Trousers",
+  "item.landfallmagic.stoneveil_boots": "Stoneveil Boots",
+
+  "item.landfallmagic.burrowhide_helmet": "Burrowhide Coif",
+  "item.landfallmagic.burrowhide_chestplate": "Burrowhide Tunic",
+  "item.landfallmagic.burrowhide_leggings": "Burrowhide Leggings",
+  "item.landfallmagic.burrowhide_boots": "Burrowhide Boots",
+
+  "item.landfallmagic.mountainbreaker_helmet": "Mountainbreaker Helm",
+  "item.landfallmagic.mountainbreaker_chestplate": "Mountainbreaker Breastplate",
+  "item.landfallmagic.mountainbreaker_leggings": "Mountainbreaker Greaves",
+  "item.landfallmagic.mountainbreaker_boots": "Mountainbreaker Sabatons",
+
+  "item.landfallmagic.skyshroud_helmet": "Skyshroud Cowl",
+  "item.landfallmagic.skyshroud_chestplate": "Skyshroud Robes",
+  "item.landfallmagic.skyshroud_leggings": "Skyshroud Trousers",
+  "item.landfallmagic.skyshroud_boots": "Skyshroud Boots",
+
+  "item.landfallmagic.galehide_helmet": "Galehide Mask",
+  "item.landfallmagic.galehide_chestplate": "Galehide Jerkin",
+  "item.landfallmagic.galehide_leggings": "Galehide Leggings",
+  "item.landfallmagic.galehide_boots": "Galehide Boots",
+
+  "item.landfallmagic.stormforged_helmet": "Stormforged Helm",
+  "item.landfallmagic.stormforged_chestplate": "Stormforged Breastplate",
+  "item.landfallmagic.stormforged_leggings": "Stormforged Greaves",
+  "item.landfallmagic.stormforged_boots": "Stormforged Sabatons",
+
+  "item.landfallmagic.sunblessed_helmet": "Sunblessed Halo",
+  "item.landfallmagic.sunblessed_chestplate": "Sunblessed Robes",
+  "item.landfallmagic.sunblessed_leggings": "Sunblessed Trousers",
+  "item.landfallmagic.sunblessed_boots": "Sunblessed Sandals",
+
+  "item.landfallmagic.dawnhide_helmet": "Dawnhide Hood",
+  "item.landfallmagic.dawnhide_chestplate": "Dawnhide Tunic",
+  "item.landfallmagic.dawnhide_leggings": "Dawnhide Leggings",
+  "item.landfallmagic.dawnhide_boots": "Dawnhide Boots",
+
+  "item.landfallmagic.radiant_helmet": "Radiant Helm",
+  "item.landfallmagic.radiant_chestplate": "Radiant Sentinel",
+  "item.landfallmagic.radiant_leggings": "Radiant Greaves",
+  "item.landfallmagic.radiant_boots": "Radiant Sabatons",
+
+  "item.landfallmagic.umbral_helmet": "Umbral Hood",
+  "item.landfallmagic.umbral_chestplate": "Umbral Shroud",
+  "item.landfallmagic.umbral_leggings": "Umbral Trousers",
+  "item.landfallmagic.umbral_boots": "Umbral Boots",
+
+  "item.landfallmagic.duskfang_helmet": "Duskfang Coif",
+  "item.landfallmagic.duskfang_chestplate": "Duskfang Tunic",
+  "item.landfallmagic.duskfang_leggings": "Duskfang Leggings",
+  "item.landfallmagic.duskfang_boots": "Duskfang Boots",
+
+  "item.landfallmagic.abyssguard_helmet": "Abyssguard Helm",
+  "item.landfallmagic.abyssguard_chestplate": "Abyssguard Plate",
+  "item.landfallmagic.abyssguard_leggings": "Abyssguard Greaves",
+  "item.landfallmagic.abyssguard_boots": "Abyssguard Sabatons",
+
+  "item.landfallmagic.geometer_helmet": "Geometer's Cowl",
+  "item.landfallmagic.geometer_chestplate": "Geometer's Vestments",
+  "item.landfallmagic.geometer_leggings": "Geometer's Trousers",
+  "item.landfallmagic.geometer_boots": "Geometer's Boots",
+
+  "item.landfallmagic.rulebound_helmet": "Rulebound Coif",
+  "item.landfallmagic.rulebound_chestplate": "Rulebound Harness",
+  "item.landfallmagic.rulebound_leggings": "Rulebound Leggings",
+  "item.landfallmagic.rulebound_boots": "Rulebound Boots",
+
+  "item.landfallmagic.lawkeeper_helmet": "Lawkeeper's Helm",
+  "item.landfallmagic.lawkeeper_chestplate": "Lawkeeper's Bulwark",
+  "item.landfallmagic.lawkeeper_leggings": "Lawkeeper's Greaves",
+  "item.landfallmagic.lawkeeper_boots": "Lawkeeper's Sabatons",
+
+  "item.landfallmagic.wildmantle_helmet": "Wildmantle Cowl",
+  "item.landfallmagic.wildmantle_chestplate": "Wildmantle Robes",
+  "item.landfallmagic.wildmantle_leggings": "Wildmantle Trousers",
+  "item.landfallmagic.wildmantle_boots": "Wildmantle Boots",
+
+  "item.landfallmagic.trickster_helmet": "Trickster's Mask",
+  "item.landfallmagic.trickster_chestplate": "Trickster's Wrap",
+  "item.landfallmagic.trickster_leggings": "Trickster's Leggings",
+  "item.landfallmagic.trickster_boots": "Trickster's Boots",
+
+  "item.landfallmagic.pandemonium_helmet": "Pandemonium Helm",
+  "item.landfallmagic.pandemonium_chestplate": "Pandemonium Guard",
+  "item.landfallmagic.pandemonium_leggings": "Pandemonium Greaves",
+  "item.landfallmagic.pandemonium_boots": "Pandemonium Sabatons",
+
+  "item.landfallmagic.weaver_helmet": "Weaver's Hood",
+  "item.landfallmagic.weaver_chestplate": "Weaver's Garb",
+  "item.landfallmagic.weaver_leggings": "Weaver's Trousers",
+  "item.landfallmagic.weaver_boots": "Weaver's Boots",
+
+  "item.landfallmagic.genesis_helmet": "Genesis Coif",
+  "item.landfallmagic.genesis_chestplate": "Genesis Hide",
+  "item.landfallmagic.genesis_leggings": "Genesis Leggings",
+  "item.landfallmagic.genesis_boots": "Genesis Boots",
+
+  "item.landfallmagic.architect_helmet": "Architect's Helm",
+  "item.landfallmagic.architect_chestplate": "Architect's Frame",
+  "item.landfallmagic.architect_leggings": "Architect's Greaves",
+  "item.landfallmagic.architect_boots": "Architect's Sabatons",
+
+  "item.landfallmagic.ashmantle_helmet": "Ashmantle Hood",
+  "item.landfallmagic.ashmantle_chestplate": "Ashmantle Robes",
+  "item.landfallmagic.ashmantle_leggings": "Ashmantle Trousers",
+  "item.landfallmagic.ashmantle_boots": "Ashmantle Boots",
+
+  "item.landfallmagic.ruinclad_helmet": "Ruinclad Coif",
+  "item.landfallmagic.ruinclad_chestplate": "Ruinclad Tunic",
+  "item.landfallmagic.ruinclad_leggings": "Ruinclad Leggings",
+  "item.landfallmagic.ruinclad_boots": "Ruinclad Boots",
+
+  "item.landfallmagic.obliterator_helmet": "Obliterator's Helm",
+  "item.landfallmagic.obliterator_chestplate": "Obliterator's Carapace",
+  "item.landfallmagic.obliterator_leggings": "Obliterator's Greaves",
+  "item.landfallmagic.obliterator_boots": "Obliterator's Sabatons"
 }

@@ -77,7 +77,7 @@ public class KarmaNodeFeature extends Feature<NoneFeatureConfiguration> {
         if (preferSurface) {
             BlockPos surfacePos = level.getHeightmapPos(Heightmap.Types.WORLD_SURFACE_WG, pos);
             if (surfacePos.getY() >= spawnInfo.minY && surfacePos.getY() <= spawnInfo.maxY) {
-                if (level.isEmptyBlock(surfacePos) && !level.isEmptyBlock(surfacePos.below())) {
+                if (level.isEmptyBlock(surfacePos) && !level.getBlockState(surfacePos.below()).isAir() && !level.getBlockState(surfacePos.below()).getFluidState().isSource()) {
                     return surfacePos;
                 }
             }
@@ -85,7 +85,7 @@ public class KarmaNodeFeature extends Feature<NoneFeatureConfiguration> {
 
         for (int y = spawnInfo.maxY; y >= spawnInfo.minY; y--) {
             BlockPos currentPos = new BlockPos(pos.getX(), y, pos.getZ());
-            if (level.isEmptyBlock(currentPos) && !level.isEmptyBlock(currentPos.below())) {
+            if (level.isEmptyBlock(currentPos) && !level.getBlockState(currentPos.below()).isAir() && !level.getBlockState(currentPos.below()).getFluidState().isSource()) {
                 return currentPos;
             }
         }

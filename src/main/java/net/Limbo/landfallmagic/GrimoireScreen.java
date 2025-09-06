@@ -97,6 +97,10 @@ public class GrimoireScreen extends HolographicScreen {
         renderHolographicText(guiGraphics, Component.literal("Current Karma Readings:"), centerX - 100, y);
         renderHolographicText(guiGraphics, Component.literal("---------------------"), centerX - 100, y + 15);
 
+        if (this.minecraft == null || this.minecraft.player == null) {
+            return;
+        }
+
         ChunkPos playerChunk = new ChunkPos(Minecraft.getInstance().player.blockPosition());
 
         if (ClientKarmaManager.hasKarmaData(playerChunk)) {

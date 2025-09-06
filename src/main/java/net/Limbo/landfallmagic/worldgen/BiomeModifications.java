@@ -1,5 +1,6 @@
 package net.Limbo.landfallmagic.worldgen;
 
+import net.Limbo.landfallmagic.Config;
 import net.Limbo.landfallmagic.ModBlocks;
 import net.Limbo.landfallmagic.ModEntities;
 import net.Limbo.landfallmagic.landfallmagic;
@@ -39,10 +40,10 @@ import java.util.List;
 public class BiomeModifications {
 
     // Helper methods
-    private static ResourceKey<ConfiguredFeature<?, ?>> createKey(String name) {
+    public static ResourceKey<ConfiguredFeature<?, ?>> createKey(String name) {
         return ResourceKey.create(Registries.CONFIGURED_FEATURE, ResourceLocation.fromNamespaceAndPath(landfallmagic.MODID, name));
     }
-    private static ResourceKey<PlacedFeature> createPlacedKey(String name) {
+    public static ResourceKey<PlacedFeature> createPlacedKey(String name) {
         return ResourceKey.create(Registries.PLACED_FEATURE, ResourceLocation.fromNamespaceAndPath(landfallmagic.MODID, name));
     }
     private static ResourceKey<BiomeModifier> createModifierKey(String name) {
@@ -66,7 +67,7 @@ public class BiomeModifications {
 
 
     public static void bootstrapConfiguredFeatures(BootstrapContext<ConfiguredFeature<?, ?>> context) {
-        context.register(KARMA_NODE_CONFIGURED, new ConfiguredFeature<>(ModFeatures.KARMA_NODE_FEATURE.get(), NoneFeatureConfiguration.INSTANCE));
+        ConfiguredFeatures.bootstrap(context);
 
         context.register(CRYSTAL_CLUSTER_CONFIGURED, new ConfiguredFeature<>(Feature.ORE, new OreConfiguration(
                 List.of(OreConfiguration.target(new BlockMatchTest(net.minecraft.world.level.block.Blocks.STONE), ModBlocks.CRYSTAL_CLUSTER.get().defaultBlockState())),

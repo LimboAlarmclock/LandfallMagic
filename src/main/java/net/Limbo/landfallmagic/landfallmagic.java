@@ -13,7 +13,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.SpawnPlacementType;
 import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.animal.Animal;
@@ -72,6 +71,8 @@ public class landfallmagic {
         // --- MOD BUS LISTENERS ---
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::registerPackets);
+        modEventBus.addListener(this::registerSpawnPlacements);
+
 
         // --- FORGE BUS REGISTRATION ---
         // We now register our new, separate ServerEvents class
@@ -90,21 +91,15 @@ public class landfallmagic {
         registrar.playToServer(C2SKarmaRequestPacket.TYPE, C2SKarmaRequestPacket.STREAM_CODEC, C2SKarmaRequestPacket.Handler::handle);
     }
 
+    private void registerSpawnPlacements(final RegisterSpawnPlacementsEvent event) {
+        event.register(ModEntities.DIRE_WOLF.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Animal::checkAnimalSpawnRules, RegisterSpawnPlacementsEvent.Operation.OR);
+    }
+
+
     // --- MOD BUS EVENTS ARE NOW HANDLED BY THE @EventBusSubscriber ANNOTATION ---
     @SubscribeEvent
     public static void onEntityAttributeCreation(EntityAttributeCreationEvent event) {
         event.put(ModEntities.DIRE_WOLF.get(), DireWolfEntity.createAttributes().build());
-    }
-
-    @SubscribeEvent
-    public static void onSpawnPlacementRegister(RegisterSpawnPlacementsEvent event) {
-        event.register(
-                ModEntities.DIRE_WOLF.get(),
-                SpawnPlacementTypes.ON_GROUND,
-                Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-                Animal::checkAnimalSpawnRules,
-                RegisterSpawnPlacementsEvent.Operation.OR
-        );
     }
 
     // --- NEW INNER CLASS FOR FORGE BUS (IN-GAME) EVENTS ---
