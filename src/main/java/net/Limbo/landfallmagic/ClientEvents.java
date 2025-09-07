@@ -19,6 +19,9 @@ import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.common.NeoForge;
+import net.Limbo.landfallmagic.ModBlockEntities;
+import net.Limbo.landfallmagic.client.renderer.KarmaCondenserRenderer;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import org.lwjgl.glfw.GLFW;
 
 @EventBusSubscriber(modid = landfallmagic.MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
@@ -44,6 +47,11 @@ public class ClientEvents {
     @SubscribeEvent
     public static void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(ModModelLayers.DIRE_WOLF_LAYER, DireWolfModel::createBodyLayer);
+    }
+
+    @SubscribeEvent
+    public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerBlockEntityRenderer(ModBlockEntities.KARMA_CONDENSER_BE.get(), KarmaCondenserRenderer::new);
     }
     // -----------------------------------------------------------
 

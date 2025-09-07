@@ -137,7 +137,13 @@ public class ModBlocks {
     public static final DeferredBlock<Block> RESEARCH_TABLE = BLOCKS.register("research_table", ResearchTableBlock::new);
     public static final DeferredItem<BlockItem> RESEARCH_TABLE_ITEM = ITEMS.registerSimpleBlockItem("research_table", RESEARCH_TABLE);
 
-    public static final DeferredBlock<Block> KARMA_CONDENSER = BLOCKS.register("karma_condenser", KarmaCondenserBlock::new);
+    public static final DeferredBlock<Block> KARMA_CONDENSER = BLOCKS.register("karma_condenser", () -> new KarmaCondenserBlock(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.COLOR_GRAY)
+            .strength(7.0F, 14.0F)
+            .sound(SoundType.NETHERITE_BLOCK)
+            .requiresCorrectToolForDrops()
+            .noOcclusion()
+            .lightLevel(state -> 8))); // Magical glow
     public static final DeferredItem<BlockItem> KARMA_CONDENSER_ITEM = ITEMS.registerSimpleBlockItem("karma_condenser", KARMA_CONDENSER);
 
     public static final DeferredBlock<Block> GRIMOIRE_BOOK = BLOCKS.register("grimoire_book", GrimoireBookBlock::new);

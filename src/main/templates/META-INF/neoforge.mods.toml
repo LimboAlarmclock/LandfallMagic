@@ -95,7 +95,7 @@ description='''A Magic Mod that hopes to bring back the feeling of your first di
 
 [[dependencies.landfallmagic]] # Replace 'your_mod_id' with your actual Mod ID
 modId="geckolib"
-mandatory=true
+type="required"
 versionRange="[4.0,)" # This means any version 5.0 or newer
 ordering="NONE"
 side="BOTH"

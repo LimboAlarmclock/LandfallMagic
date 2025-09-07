@@ -14,7 +14,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.SpawnPlacementTypes;
-import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
@@ -39,6 +38,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import org.slf4j.Logger;
+import net.Limbo.landfallmagic.ModBlockEntities;
 
 @Mod(landfallmagic.MODID)
 @EventBusSubscriber(modid = landfallmagic.MODID, bus = EventBusSubscriber.Bus.MOD)
@@ -66,7 +66,7 @@ public class landfallmagic {
         ModFeatures.FEATURES.register(modEventBus);
         CREATIVE_MODE_TABS.register(modEventBus);
         ModRegistries.ARMOR_MATERIALS.register(modEventBus);
-
+        ModBlockEntities.BLOCK_ENTITIES.register(modEventBus);
         // This line will fix the crash by loading the ModArmorMaterials class early
         try {
             Class.forName("net.Limbo.landfallmagic.ModArmorMaterials");
