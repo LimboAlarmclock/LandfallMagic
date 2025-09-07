@@ -41,7 +41,6 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import org.slf4j.Logger;
 
 @Mod(landfallmagic.MODID)
-// We've told this class to listen to the MOD bus
 @EventBusSubscriber(modid = landfallmagic.MODID, bus = EventBusSubscriber.Bus.MOD)
 public class landfallmagic {
     public static final String MODID = "landfallmagic";
@@ -49,33 +48,37 @@ public class landfallmagic {
 
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
 
-    // Creative Tab definition remains here
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> LANDFALL_MAGIC_TAB = CREATIVE_MODE_TABS.register("landfall_magic_tab", () ->
             CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup.landfallmagic"))
                     .withTabsBefore(CreativeModeTabs.COMBAT)
                     .icon(() -> ModBlocks.DARK_NODE_ITEM.get().getDefaultInstance())
                     .displayItems((parameters, output) -> {
-                        // ... items in creative tab ...
+                        ModItems.ITEMS.getEntries().forEach(item -> output.accept(item.get()));
+                        ModBlocks.ITEMS.getEntries().forEach(item -> output.accept(item.get()));
                     }).build());
 
     public landfallmagic(IEventBus modEventBus, ModContainer modContainer) {
-        // --- ALL REGISTRATIONS GO HERE ---
         ModItems.ITEMS.register(modEventBus);
         ModBlocks.BLOCKS.register(modEventBus);
         ModBlocks.ITEMS.register(modEventBus);
         ModEntities.ENTITY_TYPES.register(modEventBus);
         ModFeatures.FEATURES.register(modEventBus);
         CREATIVE_MODE_TABS.register(modEventBus);
+        ModRegistries.ARMOR_MATERIALS.register(modEventBus);
 
-        // --- MOD BUS LISTENERS ---
+        // This line will fix the crash by loading the ModArmorMaterials class early
+        try {
+            Class.forName("net.Limbo.landfallmagic.ModArmorMaterials");
+        } catch (ClassNotFoundException e) {
+            LOGGER.error("Could not find ModArmorMaterials class", e);
+        }
+
+
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::registerPackets);
         modEventBus.addListener(this::registerSpawnPlacements);
 
-
-        // --- FORGE BUS REGISTRATION ---
-        // We now register our new, separate ServerEvents class
         NeoForge.EVENT_BUS.register(new ServerEvents());
 
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
@@ -95,14 +98,11 @@ public class landfallmagic {
         event.register(ModEntities.DIRE_WOLF.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Animal::checkAnimalSpawnRules, RegisterSpawnPlacementsEvent.Operation.OR);
     }
 
-
-    // --- MOD BUS EVENTS ARE NOW HANDLED BY THE @EventBusSubscriber ANNOTATION ---
     @SubscribeEvent
     public static void onEntityAttributeCreation(EntityAttributeCreationEvent event) {
         event.put(ModEntities.DIRE_WOLF.get(), DireWolfEntity.createAttributes().build());
     }
 
-    // --- NEW INNER CLASS FOR FORGE BUS (IN-GAME) EVENTS ---
     public static class ServerEvents {
         @SubscribeEvent
         public void onRegisterCommands(RegisterCommandsEvent event) {

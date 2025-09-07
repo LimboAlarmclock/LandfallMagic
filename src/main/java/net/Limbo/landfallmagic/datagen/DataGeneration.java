@@ -28,12 +28,7 @@ public class DataGeneration {
         RegistrySetBuilder builder = new RegistrySetBuilder()
                 .add(Registries.CONFIGURED_FEATURE, BiomeModifications::bootstrapConfiguredFeatures)
                 .add(Registries.PLACED_FEATURE, BiomeModifications::bootstrapPlacedFeatures)
-                .add(NeoForgeRegistries.Keys.BIOME_MODIFIERS, BiomeModifications::bootstrapBiomeModifiers)
-                // This is the corrected way to add your armor materials.
-                // This creates a new, isolated context for the registry.
-                .add(Registries.ARMOR_MATERIAL, context -> {
-                    ModDataGeneration.bootstrap(context);
-                });
+                .add(NeoForgeRegistries.Keys.BIOME_MODIFIERS, BiomeModifications::bootstrapBiomeModifiers);
 
         generator.addProvider(event.includeServer(), new DatapackBuiltinEntriesProvider(
                 packOutput, lookupProvider, builder, Set.of(landfallmagic.MODID)));

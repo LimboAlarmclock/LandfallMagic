@@ -91,3 +91,11 @@ description='''A Magic Mod that hopes to bring back the feeling of your first di
 # stop your mod loading on the server for example.
 #[features.${mod_id}]
 #openGLVersion="[3.2,)"
+# In src/main/resources/META-INF/mods.toml
+
+[[dependencies.landfallmagic]] # Replace 'your_mod_id' with your actual Mod ID
+modId="geckolib"
+mandatory=true
+versionRange="[4.0,)" # This means any version 5.0 or newer
+ordering="NONE"
+side="BOTH"
