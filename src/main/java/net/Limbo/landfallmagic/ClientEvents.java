@@ -19,9 +19,9 @@ import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.common.NeoForge;
-import net.Limbo.landfallmagic.ModBlockEntities;
 import net.Limbo.landfallmagic.client.renderer.KarmaCondenserRenderer;
-import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import org.lwjgl.glfw.GLFW;
 
 @EventBusSubscriber(modid = landfallmagic.MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
@@ -31,6 +31,7 @@ public class ClientEvents {
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
         NeoForge.EVENT_BUS.register(new ForgeBusEvents());
     }
+
 
     @SubscribeEvent
     public static void onRegisterKeyMappings(RegisterKeyMappingsEvent event) {
@@ -57,6 +58,7 @@ public class ClientEvents {
 
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
+        ItemBlockRenderTypes.setRenderLayer(ModBlocks.RESEARCH_TABLE.get(), RenderType.cutout());
         landfallmagic.LOGGER.info("HELLO FROM CLIENT SETUP");
         landfallmagic.LOGGER.info("MINECRAFT NAME >> {}", Minecraft.getInstance().getUser().getName());
         landfallmagic.LOGGER.info("Initializing Holographic GUI System...");
