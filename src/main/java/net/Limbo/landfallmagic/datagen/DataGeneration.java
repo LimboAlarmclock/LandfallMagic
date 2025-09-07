@@ -12,6 +12,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.data.DatapackBuiltinEntriesProvider;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
+
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
@@ -28,7 +29,11 @@ public class DataGeneration {
                 .add(Registries.CONFIGURED_FEATURE, BiomeModifications::bootstrapConfiguredFeatures)
                 .add(Registries.PLACED_FEATURE, BiomeModifications::bootstrapPlacedFeatures)
                 .add(NeoForgeRegistries.Keys.BIOME_MODIFIERS, BiomeModifications::bootstrapBiomeModifiers)
-                .add(Registries.ARMOR_MATERIAL, ModDataGeneration::bootstrap); // <-- ADD THIS LINE
+                // This is the corrected way to add your armor materials.
+                // This creates a new, isolated context for the registry.
+                .add(Registries.ARMOR_MATERIAL, context -> {
+                    ModDataGeneration.bootstrap(context);
+                });
 
         generator.addProvider(event.includeServer(), new DatapackBuiltinEntriesProvider(
                 packOutput, lookupProvider, builder, Set.of(landfallmagic.MODID)));
