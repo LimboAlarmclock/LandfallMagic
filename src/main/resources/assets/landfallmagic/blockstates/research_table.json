@@ -1,8 +1,7 @@
 {
   "variants": {
-    "facing=north": { "model": "landfallmagic:block/research_table" },
-    "facing=east": { "model": "landfallmagic:block/research_table", "y": 90 },
-    "facing=south": { "model": "landfallmagic:block/research_table", "y": 180 },
-    "facing=west": { "model": "landfallmagic:block/research_table", "y": 270 }
+    "": {
+      "model": "landfallmagic:block/research_table"
+    }
   }
 }
