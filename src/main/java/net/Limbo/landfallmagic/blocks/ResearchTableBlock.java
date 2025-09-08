@@ -1,164 +1,76 @@
 package net.Limbo.landfallmagic.blocks;
 
-import net.Limbo.landfallmagic.ModBlocks;
-import net.Limbo.landfallmagic.ResearchTableScreen;
-import net.minecraft.client.Minecraft;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
-import net.minecraft.world.level.material.MapColor;
-import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.core.BlockPos;
 
 public class ResearchTableBlock extends Block {
 
-    public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
+    // Define the complex research table shape based on your model
+    private static final VoxelShape RESEARCH_TABLE_SHAPE = Shapes.or(
+            // Main tabletop (extends beyond normal block bounds)
+            Block.box(-8, 12, 0, 24, 13, 16),
 
-    // Hitboxes flipped 180 degrees from the previous rotation
-    // NORTH facing - flipped 180°
-    private static final VoxelShape SHAPE_NORTH = Shapes.or(
-            Block.box(0, 12, 2, 16, 14, 14),    // Table top
-            Block.box(0, 10, 2, 14, 12, 3),     // Back support (was front)
-            Block.box(0, 10, 13, 14, 12, 14),   // Front support (was back)
-            Block.box(15, 7, 4, 16, 12, 12),    // Right panel (was left)
-            Block.box(14, 0, 2, 16, 12, 4),     // Right front leg (was left)
-            Block.box(14, 0, 12, 16, 12, 14)    // Right back leg (was left)
-    ).optimize();
+            // Table legs (front)
+            Block.box(20, 0, 1, 22, 12, 2),   // Front right leg
+            Block.box(22, 0, 1, 23, 12, 2),   // Front right support
+            Block.box(22, 0, 2, 23, 12, 4),   // Front right corner
 
-    // EAST facing - flipped 180°
-    private static final VoxelShape SHAPE_EAST = Shapes.or(
-            Block.box(2, 12, 0, 14, 14, 16),    // Table top
-            Block.box(2, 10, 0, 3, 12, 14),     // Left side support (was right)
-            Block.box(13, 10, 0, 14, 12, 14),   // Right side support (was left)
-            Block.box(4, 7, 15, 12, 12, 16),    // Back panel (was front)
-            Block.box(2, 0, 14, 4, 12, 16),     // Left back leg (was front)
-            Block.box(12, 0, 14, 14, 12, 16)    // Right back leg (was front)
-    ).optimize();
+            // Table legs (back left)
+            Block.box(-7, 0, 1, -6, 12, 2),   // Back left leg
+            Block.box(-6, 0, 1, -4, 12, 2),   // Back left support
+            Block.box(-7, 0, 2, -6, 12, 4),   // Back left corner
 
-    // SOUTH facing - flipped 180°
-    private static final VoxelShape SHAPE_SOUTH = Shapes.or(
-            Block.box(0, 12, 2, 16, 14, 14),    // Table top
-            Block.box(2, 10, 13, 16, 12, 14),   // Front support (was back)
-            Block.box(2, 10, 2, 16, 12, 3),     // Back support (was front)
-            Block.box(0, 7, 4, 1, 12, 12),      // Left panel (was right)
-            Block.box(0, 0, 12, 2, 12, 14),     // Left back leg (was front)
-            Block.box(0, 0, 2, 2, 12, 4)        // Left front leg (was back)
-    ).optimize();
+            // Table legs (back right)
+            Block.box(-7, 0, 12, -6, 12, 14), // Back right corner posts
+            Block.box(-7, 0, 14, -6, 12, 15), // Back right edge
+            Block.box(-6, 0, 14, -4, 12, 15), // Back right support
+            Block.box(21, 0, 12, 22, 12, 14), // Front right back corner
+            Block.box(21, 0, 14, 22, 12, 15), // Front right back edge
+            Block.box(19, 0, 14, 21, 12, 15), // Front right back support
 
-    // WEST facing - flipped 180°
-    private static final VoxelShape SHAPE_WEST = Shapes.or(
-            Block.box(2, 12, 0, 14, 14, 16),    // Table top
-            Block.box(13, 10, 2, 14, 12, 16),   // Right side support (was left)
-            Block.box(2, 10, 2, 3, 12, 16),     // Left side support (was right)
-            Block.box(4, 7, 0, 12, 12, 1),      // Front panel (was back)
-            Block.box(12, 0, 0, 14, 12, 2),     // Right front leg (was back)
-            Block.box(2, 0, 0, 4, 12, 2)        // Left front leg (was back)
-    ).optimize();
+            // Books and scrolls on the table surface
+            Block.box(11.3, 12.75, 2, 15.8, 13.75, 13), // Right side book stack
+            Block.box(0.2, 12.75, 2, 4.7, 13.75, 13),   // Left side book stack
+
+            // Angled books (approximated as regular boxes for collision)
+            Block.box(8.5, 14, 2, 12, 15.5, 13),        // Right angled book
+            Block.box(4, 14, 2, 7.5, 15.5, 13),         // Left angled book
+
+            // Central scroll/book
+            Block.box(7, 13, 2, 9, 14.75, 13)
+    );
 
     public ResearchTableBlock() {
         super(BlockBehaviour.Properties.of()
-                .mapColor(MapColor.COLOR_BROWN)
+                .mapColor(MapColor.COLOR_RED)
                 .strength(3.0F, 6.0F)
                 .sound(SoundType.WOOD)
                 .requiresCorrectToolForDrops()
                 .noOcclusion());
-        this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));
-    }
-
-    @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING);
-    }
-
-    @Nullable
-    @Override
-    public BlockState getStateForPlacement(BlockPlaceContext context) {
-        Direction facing = context.getHorizontalDirection().getOpposite();
-        BlockPos pos = context.getClickedPos();
-        BlockPos partPos = pos.relative(facing.getCounterClockWise());
-
-        // Check if there's space for the second part
-        if (context.getLevel().getBlockState(partPos).canBeReplaced(context)) {
-            return this.defaultBlockState().setValue(FACING, facing);
-        }
-
-        return null; // Can't place if there's no space
-    }
-
-    @Override
-    public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
-        super.setPlacedBy(level, pos, state, placer, stack);
-        if (!level.isClientSide) {
-            Direction facing = state.getValue(FACING);
-            BlockPos partPos = pos.relative(facing.getCounterClockWise());
-
-            // Place the part block
-            BlockState partState = ModBlocks.RESEARCH_TABLE_PART.get().defaultBlockState().setValue(FACING, facing);
-            level.setBlock(partPos, partState, 3);
-        }
-    }
-
-    @Override
-    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
-        Direction facing = state.getValue(FACING);
-        BlockPos partPos = pos.relative(facing.getCounterClockWise());
-
-        // Check if the part block is still there
-        if (neighborPos.equals(partPos) && !neighborState.is(ModBlocks.RESEARCH_TABLE_PART.get())) {
-            return Blocks.AIR.defaultBlockState();
-        }
-
-        return super.updateShape(state, direction, neighborState, level, pos, neighborPos);
-    }
-
-    @Override
-    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
-        if (!state.is(newState.getBlock()) && state.hasProperty(FACING)) {
-            Direction facing = state.getValue(FACING);
-            BlockPos partPos = pos.relative(facing.getCounterClockWise());
-
-            // Remove the part block if it exists
-            if (level.getBlockState(partPos).is(ModBlocks.RESEARCH_TABLE_PART.get())) {
-                level.setBlock(partPos, Blocks.AIR.defaultBlockState(), 35);
-            }
-        }
-        super.onRemove(state, level, pos, newState, isMoving);
     }
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return switch (state.getValue(FACING)) {
-            case EAST -> SHAPE_EAST;
-            case SOUTH -> SHAPE_SOUTH;
-            case WEST -> SHAPE_WEST;
-            default -> SHAPE_NORTH;
-        };
+        return RESEARCH_TABLE_SHAPE;
     }
 
     @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (level.isClientSide) {
-            Minecraft.getInstance().setScreen(new ResearchTableScreen());
-        }
-        return InteractionResult.sidedSuccess(level.isClientSide);
+    public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        // For collision, we might want a simpler shape to avoid getting stuck
+        // You can return the full shape or create a simplified version
+        return RESEARCH_TABLE_SHAPE;
+    }
+
+    @Override
+    public VoxelShape getInteractionShape(BlockState state, BlockGetter level, BlockPos pos) {
+        return RESEARCH_TABLE_SHAPE;
     }
 }
