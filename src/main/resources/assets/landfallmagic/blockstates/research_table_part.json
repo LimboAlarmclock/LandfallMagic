@@ -1,8 +1,8 @@
 {
   "variants": {
-    "facing=north": { "model": "landfallmagic:block/research_table_part", "y": 180 },
-    "facing=south": { "model": "landfallmagic:block/research_table_part"},
-    "facing=west":  { "model": "landfallmagic:block/research_table_part", "y": 90 },
-    "facing=east":  { "model": "landfallmagic:block/research_table_part", "y": 270 }
+    "facing=north": { "model": "landfallmagic:block/research_table_part", "y": 90 },
+    "facing=south": { "model": "landfallmagic:block/research_table_part", "y": 270 },
+    "facing=west": { "model": "landfallmagic:block/research_table_part", "y": 0 },
+    "facing=east": { "model": "landfallmagic:block/research_table_part", "y": 180 }
   }
 }
