@@ -3,6 +3,6 @@
   "credit": "Made with Blockbench",
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "landfallmagic:item/runic_thread"
+    "layer0": "landfallmagic:item/earth_essence"
   }
 }

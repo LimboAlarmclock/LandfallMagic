@@ -93,6 +93,7 @@
   "command.landfallmagic.locatenode.success": "Found a %s at %s, %s, %s",
   "command.landfallmagic.locatenode.notfound": "Could not find a %s within a reasonable distance.",
 
+  "item.landfallmagic.arcane_dust": "Arcane Dust",
   "item.landfallmagic.verdant_helmet": "Verdant Hood",
   "item.landfallmagic.verdant_chestplate": "Verdant Robes",
   "item.landfallmagic.verdant_leggings": "Verdant Trousers",
