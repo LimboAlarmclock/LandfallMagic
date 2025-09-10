@@ -16,6 +16,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.neoforged.neoforge.common.Tags;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,19 +58,9 @@ public class KarmaNodeFeature extends Feature<NoneFeatureConfiguration> {
             boolean canPlace = false;
 
             synchronized (nodePositions) {
-                boolean tooClose;
-                if (currentType == KarmaType.CREATION || currentType == KarmaType.DESTRUCTION) {
-                    final int specialDistanceSq = 5000 * 5000;
-                    tooClose = nodePositions.getNodePositions().entrySet().stream()
-                            .anyMatch(entry ->
-                                    (entry.getValue() == KarmaType.CREATION || entry.getValue() == KarmaType.DESTRUCTION) &&
-                                            entry.getKey().distSqr(potentialPos) < specialDistanceSq
-                            );
-                } else {
-                    final int minDistanceSq = net.Limbo.landfallmagic.Config.MIN_NODE_DISTANCE.get() * net.Limbo.landfallmagic.Config.MIN_NODE_DISTANCE.get();
-                    tooClose = nodePositions.getNodePositions().entrySet().stream()
-                            .anyMatch(entry -> entry.getValue() == currentType && entry.getKey().distSqr(potentialPos) < minDistanceSq);
-                }
+                final int minDistanceSq = net.Limbo.landfallmagic.Config.MIN_NODE_DISTANCE.get() * net.Limbo.landfallmagic.Config.MIN_NODE_DISTANCE.get();
+                boolean tooClose = nodePositions.getNodePositions().entrySet().stream()
+                        .anyMatch(entry -> entry.getValue() == currentType && entry.getKey().distSqr(potentialPos) < minDistanceSq);
 
                 if (!tooClose) {
                     nodePositions.addPosition(potentialPos.immutable(), currentType);
@@ -143,7 +134,6 @@ public class KarmaNodeFeature extends Feature<NoneFeatureConfiguration> {
         };
     }
 
-    // --- REWRITTEN METHOD WITH IMPROVED LOGIC ---
     private KarmaNodeSpawnInfo getSpawnInfoForBiome(FeaturePlaceContext<NoneFeatureConfiguration> context, RandomSource random) {
         var biomeHolder = context.level().getBiome(context.origin());
 
@@ -168,14 +158,14 @@ public class KarmaNodeFeature extends Feature<NoneFeatureConfiguration> {
         // Overworld
         else {
             if (isNodeCategoryEnabled(NodeRarity.UNCOMMON)) {
-                if (biomeHolder.is(Biomes.FLOWER_FOREST) || biomeHolder.is(Biomes.CHERRY_GROVE)) {
-                    possibleSpawns.add(new KarmaNodeSpawnInfo(KarmaType.LIGHT, NodeRarity.UNCOMMON, 150, 320, true, false));
-                } else if (biomeHolder.is(Biomes.DEEP_DARK)) { // Made this check more specific
+                if (biomeHolder.is(Biomes.FLOWER_FOREST) || biomeHolder.is(Biomes.CHERRY_GROVE) || biomeHolder.is(Biomes.MEADOW)) {
+                    possibleSpawns.add(new KarmaNodeSpawnInfo(KarmaType.LIGHT, NodeRarity.UNCOMMON, 30, 240, true, false));
+                } else if (biomeHolder.is(Biomes.DEEP_DARK) || (biomeHolder.is(Tags.Biomes.IS_CAVE))) {
                     possibleSpawns.add(new KarmaNodeSpawnInfo(KarmaType.DARK, NodeRarity.UNCOMMON, -64, 0, false, false));
                 }
             }
             if (isNodeCategoryEnabled(NodeRarity.COMMON)) {
-                if (biomeHolder.is(BiomeTags.IS_BADLANDS) || biomeHolder.is(BiomeTags.HAS_VILLAGE_DESERT))
+                if (biomeHolder.is(BiomeTags.IS_BADLANDS) || biomeHolder.is(Tags.Biomes.IS_DESERT) || (biomeHolder.is(BiomeTags.IS_SAVANNA)))
                     possibleSpawns.add(new KarmaNodeSpawnInfo(KarmaType.FIRE, NodeRarity.COMMON, 50, 128, true, false));
                 else if (biomeHolder.is(BiomeTags.IS_OCEAN) || biomeHolder.is(BiomeTags.IS_RIVER) || biomeHolder.is(Biomes.SWAMP) || biomeHolder.is(Biomes.MANGROVE_SWAMP))
                     possibleSpawns.add(new KarmaNodeSpawnInfo(KarmaType.WATER, NodeRarity.COMMON, 30, 60, false, false));
