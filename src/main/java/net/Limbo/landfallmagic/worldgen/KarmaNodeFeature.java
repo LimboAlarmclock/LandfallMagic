@@ -4,10 +4,12 @@ import com.mojang.serialization.Codec;
 import net.Limbo.landfallmagic.ModBlocks;
 import net.Limbo.landfallmagic.karma.KarmaType;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BiomeTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -27,49 +29,67 @@ public class KarmaNodeFeature extends Feature<NoneFeatureConfiguration> {
     @Override
     public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> context) {
         WorldGenLevel level = context.level();
-        BlockPos origin = context.origin();
+        if (!(level.getLevel() instanceof ServerLevel serverLevel)) {
+            return false;
+        }
+
         RandomSource random = context.random();
 
         if (!net.Limbo.landfallmagic.Config.ENABLE_KARMA_NODE_GENERATION.get()) {
             return false;
         }
 
-        ResourceKey<Biome> biomeKey = level.getBiome(origin).unwrapKey().orElse(null);
-        if (biomeKey == null) {
-            return false;
-        }
-
-        KarmaNodeSpawnInfo spawnInfo = getSpawnInfoForBiome(biomeKey, level, random);
+        KarmaNodeSpawnInfo spawnInfo = getSpawnInfoForBiome(context, random);
         if (spawnInfo == null) {
             return false;
         }
 
-        // --- UPDATED LOGIC ---
-        // Use special placement for water nodes, and the standard placement for all others.
         BlockPos potentialPos;
         if (spawnInfo.karmaType == KarmaType.WATER) {
-            potentialPos = findWaterY(level, origin);
+            potentialPos = findWaterY(level, context.origin());
         } else {
-            potentialPos = findSuitableY(level, origin, random, spawnInfo);
+            potentialPos = findSuitableY(level, context.origin(), random, spawnInfo);
         }
-        // --- END OF UPDATE ---
 
         if (potentialPos != null) {
-            Block nodeBlock = spawnInfo.getNodeBlock();
-            if (nodeBlock != null) {
-                level.setBlock(potentialPos, nodeBlock.defaultBlockState(), 2);
-                level.scheduleTick(potentialPos, nodeBlock, net.Limbo.landfallmagic.Config.NODE_TICK_DELAY.get());
-                net.Limbo.landfallmagic.landfallmagic.LOGGER.info("Placed {} karma node at {}", spawnInfo.karmaType, potentialPos);
-                return true;
+            KarmaNodePositions nodePositions = KarmaNodePositions.get(serverLevel);
+            KarmaType currentType = spawnInfo.karmaType;
+            boolean canPlace = false;
+
+            synchronized (nodePositions) {
+                boolean tooClose;
+                if (currentType == KarmaType.CREATION || currentType == KarmaType.DESTRUCTION) {
+                    final int specialDistanceSq = 5000 * 5000;
+                    tooClose = nodePositions.getNodePositions().entrySet().stream()
+                            .anyMatch(entry ->
+                                    (entry.getValue() == KarmaType.CREATION || entry.getValue() == KarmaType.DESTRUCTION) &&
+                                            entry.getKey().distSqr(potentialPos) < specialDistanceSq
+                            );
+                } else {
+                    final int minDistanceSq = net.Limbo.landfallmagic.Config.MIN_NODE_DISTANCE.get() * net.Limbo.landfallmagic.Config.MIN_NODE_DISTANCE.get();
+                    tooClose = nodePositions.getNodePositions().entrySet().stream()
+                            .anyMatch(entry -> entry.getValue() == currentType && entry.getKey().distSqr(potentialPos) < minDistanceSq);
+                }
+
+                if (!tooClose) {
+                    nodePositions.addPosition(potentialPos.immutable(), currentType);
+                    canPlace = true;
+                }
+            }
+
+            if (canPlace) {
+                Block nodeBlock = spawnInfo.getNodeBlock();
+                if (nodeBlock != null) {
+                    level.setBlock(potentialPos, nodeBlock.defaultBlockState(), 2);
+                    level.scheduleTick(potentialPos, nodeBlock, net.Limbo.landfallmagic.Config.NODE_TICK_DELAY.get());
+                    net.Limbo.landfallmagic.landfallmagic.LOGGER.info("Placed {} karma node at {}", spawnInfo.karmaType, potentialPos);
+                    return true;
+                }
             }
         }
-
         return false;
     }
 
-    /**
-     * Standard placement for land-based and underground nodes.
-     */
     private BlockPos findSuitableY(WorldGenLevel level, BlockPos pos, RandomSource random, KarmaNodeSpawnInfo spawnInfo) {
         double surfaceBias = net.Limbo.landfallmagic.Config.SURFACE_NODE_BIAS.get();
         boolean preferSurface = random.nextDouble() < surfaceBias || spawnInfo.prefersSurface;
@@ -85,16 +105,13 @@ public class KarmaNodeFeature extends Feature<NoneFeatureConfiguration> {
 
         for (int y = spawnInfo.maxY; y >= spawnInfo.minY; y--) {
             BlockPos currentPos = new BlockPos(pos.getX(), y, pos.getZ());
-            if (level.isEmptyBlock(currentPos) && !level.getBlockState(currentPos.below()).isAir() && !level.getBlockState(currentPos.below()).getFluidState().isSource()) {
+            if (level.isEmptyBlock(currentPos) && !level.getBlockState(currentPos.below()).isAir()) {
                 return currentPos;
             }
         }
         return null;
     }
 
-    /**
-     * Special placement logic for water nodes to spawn mid-water.
-     */
     private BlockPos findWaterY(WorldGenLevel level, BlockPos pos) {
         BlockPos waterSurfacePos = level.getHeightmapPos(Heightmap.Types.WORLD_SURFACE_WG, pos);
         BlockPos oceanFloorPos = level.getHeightmapPos(Heightmap.Types.OCEAN_FLOOR_WG, pos);
@@ -102,16 +119,13 @@ public class KarmaNodeFeature extends Feature<NoneFeatureConfiguration> {
         int waterSurfaceY = waterSurfacePos.getY();
         int oceanFloorY = oceanFloorPos.getY();
 
-        // Ensure there's at least 6 blocks of water to prevent spawning in shallow puddles
         if (waterSurfaceY - oceanFloorY < 6) {
             return null;
         }
 
-        // Calculate the middle of the water column
         int targetY = oceanFloorY + (waterSurfaceY - oceanFloorY) / 2;
         BlockPos potentialPos = new BlockPos(pos.getX(), targetY, pos.getZ());
 
-        // Final check to make sure we're placing it in a water block
         if (level.getBlockState(potentialPos).is(Blocks.WATER)) {
             return potentialPos;
         }
@@ -129,43 +143,47 @@ public class KarmaNodeFeature extends Feature<NoneFeatureConfiguration> {
         };
     }
 
-    private KarmaNodeSpawnInfo getSpawnInfoForBiome(ResourceKey<Biome> biome, WorldGenLevel level, RandomSource random) {
-        String biomeName = biome.location().getPath();
-        boolean isNether = level.getLevel().dimension() == net.minecraft.world.level.Level.NETHER;
-        boolean isEnd = level.getLevel().dimension() == net.minecraft.world.level.Level.END;
-        boolean isOverworld = level.getLevel().dimension() == net.minecraft.world.level.Level.OVERWORLD;
+    // --- REWRITTEN METHOD WITH IMPROVED LOGIC ---
+    private KarmaNodeSpawnInfo getSpawnInfoForBiome(FeaturePlaceContext<NoneFeatureConfiguration> context, RandomSource random) {
+        var biomeHolder = context.level().getBiome(context.origin());
 
         List<KarmaNodeSpawnInfo> possibleSpawns = new ArrayList<>();
 
-        if ((isOverworld && (biomeName.contains("desert") || biomeName.contains("badlands"))) || isNether) {
-            possibleSpawns.add(new KarmaNodeSpawnInfo(KarmaType.FIRE, NodeRarity.COMMON, isNether ? 0 : 50, isNether ? 128 : 120, true, false));
+        // Nether
+        if (biomeHolder.is(BiomeTags.IS_NETHER)) {
+            if (isNodeCategoryEnabled(NodeRarity.RARE))
+                possibleSpawns.add(new KarmaNodeSpawnInfo(KarmaType.CHAOS, NodeRarity.RARE, 0, 128, false, false));
+            if (isNodeCategoryEnabled(NodeRarity.COMMON))
+                possibleSpawns.add(new KarmaNodeSpawnInfo(KarmaType.FIRE, NodeRarity.COMMON, 0, 128, true, false));
         }
-        if (isOverworld && (biomeName.contains("ocean") || biomeName.contains("river") || biomeName.contains("swamp"))) {
-            possibleSpawns.add(new KarmaNodeSpawnInfo(KarmaType.WATER, NodeRarity.COMMON, 30, 60, false, false));
+        // End
+        else if (biomeHolder.is(BiomeTags.IS_END)) {
+            if (isNodeCategoryEnabled(NodeRarity.MYTHIC)) {
+                possibleSpawns.add(new KarmaNodeSpawnInfo(KarmaType.CREATION, NodeRarity.MYTHIC, 0, 128, false, true));
+                possibleSpawns.add(new KarmaNodeSpawnInfo(KarmaType.DESTRUCTION, NodeRarity.MYTHIC, 0, 128, false, true));
+            }
+            if (isNodeCategoryEnabled(NodeRarity.RARE))
+                possibleSpawns.add(new KarmaNodeSpawnInfo(KarmaType.ORDER, NodeRarity.RARE, 0, 128, true, false));
         }
-        if (isOverworld && (biomeName.contains("forest") || biomeName.contains("jungle") || biomeName.contains("taiga") || biomeName.contains("hills") || biomeName.contains("cave"))) {
-            possibleSpawns.add(new KarmaNodeSpawnInfo(KarmaType.EARTH, NodeRarity.COMMON, 0, 80, false, false));
-        }
-        if (isOverworld && (biomeName.contains("mountain") || biomeName.contains("windswept") || biomeName.contains("plains"))) {
-            possibleSpawns.add(new KarmaNodeSpawnInfo(KarmaType.AIR, NodeRarity.COMMON, 100, 320, true, false));
-        }
-        if ((isOverworld && (biomeName.contains("sunflower") || biomeName.contains("cherry") || biomeName.contains("mushroom"))) || (isEnd && biomeName.contains("highlands"))) {
-            possibleSpawns.add(new KarmaNodeSpawnInfo(KarmaType.LIGHT, NodeRarity.UNCOMMON, 150, 320, true, false));
-        }
-        if ((isOverworld && (biomeName.contains("deep_dark") || biomeName.contains("dark_forest"))) || (isNether && biomeName.contains("soul_sand_valley"))) {
-            possibleSpawns.add(new KarmaNodeSpawnInfo(KarmaType.DARK, NodeRarity.UNCOMMON, isOverworld ? -64 : 0, isOverworld ? 0 : 128, false, false));
-        }
-        if (isEnd && biomeName.contains("end_highlands")) {
-            possibleSpawns.add(new KarmaNodeSpawnInfo(KarmaType.ORDER, NodeRarity.RARE, 0, 128, true, false));
-        }
-        if (isNether && (biomeName.contains("crimson") || biomeName.contains("warped"))) {
-            possibleSpawns.add(new KarmaNodeSpawnInfo(KarmaType.CHAOS, NodeRarity.RARE, 0, 128, false, false));
-        }
-        if (isEnd && biomeName.contains("end_barrens")) {
-            possibleSpawns.add(new KarmaNodeSpawnInfo(KarmaType.CREATION, NodeRarity.MYTHIC, 0, 128, false, true));
-        }
-        if (isEnd && biomeName.contains("small_end_islands")) {
-            possibleSpawns.add(new KarmaNodeSpawnInfo(KarmaType.DESTRUCTION, NodeRarity.MYTHIC, 0, 128, false, true));
+        // Overworld
+        else {
+            if (isNodeCategoryEnabled(NodeRarity.UNCOMMON)) {
+                if (biomeHolder.is(Biomes.FLOWER_FOREST) || biomeHolder.is(Biomes.CHERRY_GROVE)) {
+                    possibleSpawns.add(new KarmaNodeSpawnInfo(KarmaType.LIGHT, NodeRarity.UNCOMMON, 150, 320, true, false));
+                } else if (biomeHolder.is(Biomes.DEEP_DARK)) { // Made this check more specific
+                    possibleSpawns.add(new KarmaNodeSpawnInfo(KarmaType.DARK, NodeRarity.UNCOMMON, -64, 0, false, false));
+                }
+            }
+            if (isNodeCategoryEnabled(NodeRarity.COMMON)) {
+                if (biomeHolder.is(BiomeTags.IS_BADLANDS) || biomeHolder.is(BiomeTags.HAS_VILLAGE_DESERT))
+                    possibleSpawns.add(new KarmaNodeSpawnInfo(KarmaType.FIRE, NodeRarity.COMMON, 50, 128, true, false));
+                else if (biomeHolder.is(BiomeTags.IS_OCEAN) || biomeHolder.is(BiomeTags.IS_RIVER) || biomeHolder.is(Biomes.SWAMP) || biomeHolder.is(Biomes.MANGROVE_SWAMP))
+                    possibleSpawns.add(new KarmaNodeSpawnInfo(KarmaType.WATER, NodeRarity.COMMON, 30, 60, false, false));
+                else if (biomeHolder.is(BiomeTags.IS_MOUNTAIN))
+                    possibleSpawns.add(new KarmaNodeSpawnInfo(KarmaType.AIR, NodeRarity.COMMON, 100, 320, true, false));
+                else if (biomeHolder.is(BiomeTags.IS_FOREST) || biomeHolder.is(BiomeTags.IS_JUNGLE) || biomeHolder.is(BiomeTags.IS_TAIGA))
+                    possibleSpawns.add(new KarmaNodeSpawnInfo(KarmaType.EARTH, NodeRarity.COMMON, 0, 80, false, false));
+            }
         }
 
         if (possibleSpawns.isEmpty()) {
@@ -174,6 +192,7 @@ public class KarmaNodeFeature extends Feature<NoneFeatureConfiguration> {
 
         return possibleSpawns.get(random.nextInt(possibleSpawns.size()));
     }
+
     public enum NodeRarity {
         COMMON, UNCOMMON, RARE, MYTHIC
     }

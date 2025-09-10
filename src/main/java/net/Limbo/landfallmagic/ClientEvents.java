@@ -9,15 +9,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
-import net.neoforged.neoforge.client.gui.ConfigurationScreen;
-import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.common.NeoForge;
 import net.Limbo.landfallmagic.client.renderer.KarmaCondenserRenderer;
 import net.minecraft.client.renderer.RenderType;
@@ -26,12 +23,6 @@ import org.lwjgl.glfw.GLFW;
 
 @EventBusSubscriber(modid = landfallmagic.MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ClientEvents {
-
-    public ClientEvents(ModContainer container) {
-        container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
-        NeoForge.EVENT_BUS.register(new ForgeBusEvents());
-    }
-
 
     @SubscribeEvent
     public static void onRegisterKeyMappings(RegisterKeyMappingsEvent event) {
@@ -68,6 +59,9 @@ public class ClientEvents {
         landfallmagic.LOGGER.info("  Sound Effects: {}", Config.ENABLE_HOLOGRAM_SOUND.get());
         landfallmagic.LOGGER.info("  Scanning Lines: {}", Config.ENABLE_SCANNING_LINES.get());
         landfallmagic.LOGGER.info("  Alpha Level: {}", Config.HOLOGRAM_ALPHA_LEVEL.get());
+
+        // We need to register the ForgeBusEvents manually since we removed the constructor
+        NeoForge.EVENT_BUS.register(new ForgeBusEvents());
     }
 
     public static class ForgeBusEvents {
@@ -101,7 +95,8 @@ public class ClientEvents {
                 if (hasGrimoireAccess(mc.player)) {
                     ClientKarmaManager.requestKarmaDataAroundPlayer(2);
                     mc.setScreen(new GrimoireScreen());
-                    mc.player.displayClientMessage(Component.translatable("message.landfallmagic.grimoire_opened"), true);
+                    // This message was missing a key in your lang file, so I'm using a literal for now
+                    mc.player.displayClientMessage(Component.literal("Grimoire Opened"), true);
                     playHologramActivationSound(mc);
                 } else {
                     mc.player.displayClientMessage(Component.translatable("message.landfallmagic.grimoire_required"), true);
@@ -155,7 +150,8 @@ public class ClientEvents {
                     net.minecraft.nbt.CompoundTag karmaData = ClientKarmaManager.getKarma(playerChunk);
                     mc.player.displayClientMessage(Component.literal("Karma Overlay - Chunk " + playerChunk + ": " + karmaData), false);
                 } else {
-                    mc.player.displayClientMessage(Component.translatable("message.landfallmagic.karma_overlay_no_data"), true);
+                    // This was also missing a key, so using a literal
+                    mc.player.displayClientMessage(Component.literal("No karma data for this chunk. Press 'K' again to request."), true);
                 }
             }
         }

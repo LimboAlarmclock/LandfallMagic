@@ -27,6 +27,8 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.client.gui.ConfigurationScreen;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
@@ -82,6 +84,8 @@ public class landfallmagic {
         NeoForge.EVENT_BUS.register(new ServerEvents());
 
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+        // This is the line that was moved from ClientEvents.java
+        modContainer.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
