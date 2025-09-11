@@ -3,9 +3,13 @@ package net.Limbo.landfallmagic.karma;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.context.CommandContext;
 import net.Limbo.landfallmagic.ModBlocks;
+import net.Limbo.landfallmagic.magic.MagicSchool;
+import net.Limbo.landfallmagic.magic.PlayerMagicHelper;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -17,6 +21,12 @@ import net.minecraft.world.level.saveddata.SavedData;
 public class KarmaCommands {
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+        // Register both karma commands and magic commands
+        registerKarmaCommands(dispatcher);
+        registerMagicCommands(dispatcher);
+    }
+
+    private static void registerKarmaCommands(CommandDispatcher<CommandSourceStack> dispatcher) {
         // Fixed chunkkarma command - this was missing from your original
         dispatcher.register(Commands.literal("chunkkarma")
                 .requires(source -> source.hasPermission(2)) // Require OP level 2
@@ -142,6 +152,62 @@ public class KarmaCommands {
                         })
                 )
         );
+    }
+
+    private static void registerMagicCommands(CommandDispatcher<CommandSourceStack> dispatcher) {
+        dispatcher.register(Commands.literal("magic")
+                .requires(source -> source.hasPermission(2)) // OP level 2
+                .then(Commands.literal("set")
+                        .then(Commands.argument("player", EntityArgument.player())
+                                .then(Commands.argument("school", StringArgumentType.string())
+                                        .executes(KarmaCommands::setMagicSchool))))
+                .then(Commands.literal("get")
+                        .then(Commands.argument("player", EntityArgument.player())
+                                .executes(KarmaCommands::getMagicSchool)))
+        );
+    }
+
+    private static int setMagicSchool(CommandContext<CommandSourceStack> context) {
+        try {
+            ServerPlayer player = EntityArgument.getPlayer(context, "player");
+            String schoolName = StringArgumentType.getString(context, "school").toUpperCase();
+
+            MagicSchool school;
+            try {
+                school = MagicSchool.valueOf(schoolName);
+            } catch (IllegalArgumentException e) {
+                context.getSource().sendFailure(Component.literal("Invalid magic school: " + schoolName));
+                context.getSource().sendFailure(Component.literal("Valid schools: NONE, DRUIDIC, SORCERY, RITUALIST"));
+                return 0;
+            }
+
+            PlayerMagicHelper.setPlayerMagicSchool(player, school);
+
+            context.getSource().sendSuccess(() -> Component.literal(
+                    "Set " + player.getName().getString() + "'s magic school to " + school.getSerializedName()
+            ), true);
+
+            return 1;
+        } catch (Exception e) {
+            context.getSource().sendFailure(Component.literal("Error setting magic school: " + e.getMessage()));
+            return 0;
+        }
+    }
+
+    private static int getMagicSchool(CommandContext<CommandSourceStack> context) {
+        try {
+            ServerPlayer player = EntityArgument.getPlayer(context, "player");
+            MagicSchool school = PlayerMagicHelper.getPlayerMagicSchool(player);
+
+            context.getSource().sendSuccess(() -> Component.literal(
+                    player.getName().getString() + "'s magic school: " + school.getSerializedName()
+            ), false);
+
+            return 1;
+        } catch (Exception e) {
+            context.getSource().sendFailure(Component.literal("Error getting magic school: " + e.getMessage()));
+            return 0;
+        }
     }
 
     private static void findNearestNode(ServerPlayer player, Block targetNode, KarmaType type) {

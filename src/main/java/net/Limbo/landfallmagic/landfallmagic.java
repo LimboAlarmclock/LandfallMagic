@@ -5,6 +5,7 @@ import net.Limbo.landfallmagic.entity.DireWolfEntity;
 import net.Limbo.landfallmagic.karma.KarmaCapability;
 import net.Limbo.landfallmagic.karma.KarmaCommands;
 import net.Limbo.landfallmagic.karma.KarmaNodeBlock;
+import net.Limbo.landfallmagic.magic.ModAttachments;
 import net.Limbo.landfallmagic.network.C2SKarmaRequestPacket;
 import net.Limbo.landfallmagic.network.S2CKarmaUpdatePacket;
 import net.Limbo.landfallmagic.worldgen.ModFeatures;
@@ -69,6 +70,7 @@ public class landfallmagic {
         CREATIVE_MODE_TABS.register(modEventBus);
         ModRegistries.ARMOR_MATERIALS.register(modEventBus);
         ModBlockEntities.BLOCK_ENTITIES.register(modEventBus);
+        ModAttachments.ATTACHMENT_TYPES.register(modEventBus);
         // This line will fix the crash by loading the ModArmorMaterials class early
         try {
             Class.forName("net.Limbo.landfallmagic.ModArmorMaterials");

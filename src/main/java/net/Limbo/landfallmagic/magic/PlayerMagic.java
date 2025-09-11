@@ -1,9 +1,27 @@
+// Fixed PlayerMagic.java - Remove INBTSerializable, use proper attachment serialization
 package net.Limbo.landfallmagic.magic;
 
-import net.minecraft.nbt.CompoundTag;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 public class PlayerMagic implements IPlayerMagic {
-    private MagicSchool magicSchool = MagicSchool.NONE;
+    public static final Codec<PlayerMagic> CODEC = RecordCodecBuilder.create(instance ->
+            instance.group(
+                    MagicSchool.CODEC.fieldOf("magicSchool").forGetter(PlayerMagic::getMagicSchool)
+            ).apply(instance, PlayerMagic::new)
+    );
+
+    private MagicSchool magicSchool;
+
+    // Default constructor (required)
+    public PlayerMagic() {
+        this.magicSchool = MagicSchool.NONE;
+    }
+
+    // Constructor for codec
+    public PlayerMagic(MagicSchool magicSchool) {
+        this.magicSchool = magicSchool != null ? magicSchool : MagicSchool.NONE;
+    }
 
     @Override
     public MagicSchool getMagicSchool() {
@@ -12,19 +30,11 @@ public class PlayerMagic implements IPlayerMagic {
 
     @Override
     public void setMagicSchool(MagicSchool school) {
-        this.magicSchool = school;
+        this.magicSchool = school != null ? school : MagicSchool.NONE;
     }
 
     @Override
-    public CompoundTag serializeNBT() {
-        CompoundTag nbt = new CompoundTag();
-        nbt.putString("magicSchool", this.magicSchool.getSerializedName());
-        return nbt;
-    }
-
-    @Override
-    public void deserializeNBT(CompoundTag nbt) {
-        // Find the MagicSchool enum constant that matches the saved string
-        this.magicSchool = MagicSchool.valueOf(nbt.getString("magicSchool").toUpperCase());
+    public PlayerMagic copy() {
+        return new PlayerMagic(this.magicSchool);
     }
 }

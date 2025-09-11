@@ -1,5 +1,6 @@
 package net.Limbo.landfallmagic.magic;
 
+import com.mojang.serialization.Codec;
 import net.minecraft.util.StringRepresentable;
 
 public enum MagicSchool implements StringRepresentable {
@@ -7,6 +8,8 @@ public enum MagicSchool implements StringRepresentable {
     DRUIDIC("druidic"),
     SORCERY("sorcery"),
     RITUALIST("ritualist");
+
+    public static final Codec<MagicSchool> CODEC = StringRepresentable.fromEnum(MagicSchool::values);
 
     private final String name;
 
