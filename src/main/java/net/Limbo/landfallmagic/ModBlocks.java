@@ -161,6 +161,8 @@ public class ModBlocks {
     public static final DeferredBlock<Block> CRYSTAL_CLUSTER = BLOCKS.register("crystal_cluster", CrystalClusterBlock::new);
     public static final DeferredItem<BlockItem> CRYSTAL_CLUSTER_ITEM = ITEMS.registerSimpleBlockItem("crystal_cluster", CRYSTAL_CLUSTER);
 
+    public static final DeferredBlock<Block> ALTAR_OF_CHOICE = BLOCKS.register("altar_of_choice", AltarOfChoiceBlock::new);
+    public static final DeferredItem<BlockItem> ALTAR_OF_CHOICE_ITEM = ITEMS.registerSimpleBlockItem("altar_of_choice", ALTAR_OF_CHOICE);
     // --- TREE BLOCKS ---
     public static final DeferredBlock<Block> ENCHANTED_LOG = BLOCKS.register("enchanted_log", EnchantedLogBlock::new);
     public static final DeferredItem<BlockItem> ENCHANTED_LOG_ITEM = ITEMS.registerSimpleBlockItem("enchanted_log", ENCHANTED_LOG);

@@ -1,0 +1,7 @@
+{
+  "parent": "landfallmagic:block/ritual_altar",
+  "textures": {
+    "0": "landfallmagic:block/altar_of_choice",
+    "particle": "landfallmagic:block/altar_of_choice"
+  }
+}
