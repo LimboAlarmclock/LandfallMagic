@@ -1,24 +1,24 @@
 package net.Limbo.landfallmagic;
 
+import net.Limbo.landfallmagic.client.screen.ResearchTableScreen;
 import net.Limbo.landfallmagic.client.model.DireWolfModel;
 import net.Limbo.landfallmagic.client.model.ModModelLayers;
 import net.Limbo.landfallmagic.client.renderer.DireWolfRenderer;
+import net.Limbo.landfallmagic.client.renderer.KarmaCondenserRenderer;
 import net.Limbo.landfallmagic.karma.client.ClientKarmaManager;
+import net.Limbo.landfallmagic.menu.ModMenuTypes;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.neoforged.neoforge.client.event.InputEvent;
-import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.client.event.*;
 import net.neoforged.neoforge.common.NeoForge;
-import net.Limbo.landfallmagic.client.renderer.KarmaCondenserRenderer;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import org.lwjgl.glfw.GLFW;
 
 @EventBusSubscriber(modid = landfallmagic.MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
@@ -30,10 +30,16 @@ public class ClientEvents {
         event.register(ForgeBusEvents.KARMA_OVERLAY_KEY);
     }
 
-    // --- NEW METHODS FOR REGISTERING ENTITY MODEL AND RENDERER ---
+    // --- NEW METHOD FOR REGISTERING SCREENS ---
+    @SubscribeEvent
+    public static void onRegisterMenuScreens(RegisterMenuScreensEvent event) {
+        event.register(ModMenuTypes.RESEARCH_TABLE_MENU.get(), net.Limbo.landfallmagic.client.screen.ResearchTableScreen::new);
+    }
+
     @SubscribeEvent
     public static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.DIRE_WOLF.get(), DireWolfRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.KARMA_CONDENSER_BE.get(), KarmaCondenserRenderer::new);
     }
 
     @SubscribeEvent
@@ -42,13 +48,9 @@ public class ClientEvents {
     }
 
     @SubscribeEvent
-    public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
-        event.registerBlockEntityRenderer(ModBlockEntities.KARMA_CONDENSER_BE.get(), KarmaCondenserRenderer::new);
-    }
-    // -----------------------------------------------------------
-
-    @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
+        // The registration call is removed from here
+
         ItemBlockRenderTypes.setRenderLayer(ModBlocks.RESEARCH_TABLE.get(), RenderType.cutout());
         landfallmagic.LOGGER.info("HELLO FROM CLIENT SETUP");
         landfallmagic.LOGGER.info("MINECRAFT NAME >> {}", Minecraft.getInstance().getUser().getName());
@@ -60,7 +62,6 @@ public class ClientEvents {
         landfallmagic.LOGGER.info("  Scanning Lines: {}", Config.ENABLE_SCANNING_LINES.get());
         landfallmagic.LOGGER.info("  Alpha Level: {}", Config.HOLOGRAM_ALPHA_LEVEL.get());
 
-        // We need to register the ForgeBusEvents manually since we removed the constructor
         NeoForge.EVENT_BUS.register(new ForgeBusEvents());
     }
 

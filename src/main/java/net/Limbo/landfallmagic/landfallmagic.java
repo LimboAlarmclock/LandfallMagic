@@ -42,6 +42,8 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import org.slf4j.Logger;
 import net.Limbo.landfallmagic.ModBlockEntities;
+import net.Limbo.landfallmagic.spell.SpellRecipeRegistry;
+import net.Limbo.landfallmagic.datagen.ModDataComponents;
 
 @Mod(landfallmagic.MODID)
 @EventBusSubscriber(modid = landfallmagic.MODID, bus = EventBusSubscriber.Bus.MOD)
@@ -71,6 +73,10 @@ public class landfallmagic {
         ModRegistries.ARMOR_MATERIALS.register(modEventBus);
         ModBlockEntities.BLOCK_ENTITIES.register(modEventBus);
         ModAttachments.ATTACHMENT_TYPES.register(modEventBus);
+        ModDataComponents.DATA_COMPONENTS.register(modEventBus);
+
+        net.Limbo.landfallmagic.menu.ModMenuTypes.MENUS.register(modEventBus);
+
         // This line will fix the crash by loading the ModArmorMaterials class early
         try {
             Class.forName("net.Limbo.landfallmagic.ModArmorMaterials");
@@ -91,6 +97,10 @@ public class landfallmagic {
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
+        event.enqueueWork(() -> {
+            // This will load all your spell recipes into memory when the game starts
+            SpellRecipeRegistry.registerRecipes();
+        });
         LOGGER.info("HELLO FROM LANDFALL MAGIC COMMON SETUP");
     }
 

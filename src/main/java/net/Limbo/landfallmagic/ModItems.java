@@ -4,6 +4,10 @@ import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import net.Limbo.landfallmagic.item.RuneItem; // Add this
+import net.Limbo.landfallmagic.item.SpellPageItem; // Add this
+import net.Limbo.landfallmagic.spell.SpellElement; // Add this
+import net.Limbo.landfallmagic.spell.SpellForm;
 
 public class ModItems {
 
@@ -271,4 +275,26 @@ public class ModItems {
     public static final DeferredItem<Item> OBLITERATOR_CHESTPLATE = ITEMS.register("obliterator_chestplate", () -> new ArmorItem(ModArmorMaterials.OBLITERATOR, ArmorItem.Type.CHESTPLATE, new Item.Properties()));
     public static final DeferredItem<Item> OBLITERATOR_LEGGINGS = ITEMS.register("obliterator_leggings", () -> new ArmorItem(ModArmorMaterials.OBLITERATOR, ArmorItem.Type.LEGGINGS, new Item.Properties()));
     public static final DeferredItem<Item> OBLITERATOR_BOOTS = ITEMS.register("obliterator_boots", () -> new ArmorItem(ModArmorMaterials.OBLITERATOR, ArmorItem.Type.BOOTS, new Item.Properties()));
+
+    // --- SPELL COMPONENTS ---
+    public static final DeferredItem<Item> SPELL_PAGE = ITEMS.register("spell_page", () -> new SpellPageItem(new Item.Properties()));
+
+    // --- FORM RUNES ---
+    public static final DeferredItem<Item> RUNE_FORM_PROJECTILE = ITEMS.register("rune_form_projectile", () -> new RuneItem(SpellForm.PROJECTILE));
+    public static final DeferredItem<Item> RUNE_FORM_SELF = ITEMS.register("rune_form_self", () -> new RuneItem(SpellForm.SELF));
+    public static final DeferredItem<Item> RUNE_FORM_TOUCH = ITEMS.register("rune_form_touch", () -> new RuneItem(SpellForm.TOUCH));
+    public static final DeferredItem<Item> RUNE_FORM_ZONE = ITEMS.register("rune_form_zone", () -> new RuneItem(SpellForm.ZONE));
+
+    // --- ELEMENT RUNES ---
+    public static final DeferredItem<Item> RUNE_ELEMENT_FIRE = ITEMS.register("rune_element_fire", () -> new RuneItem(SpellElement.FIRE));
+    public static final DeferredItem<Item> RUNE_ELEMENT_WATER = ITEMS.register("rune_element_water", () -> new RuneItem(SpellElement.WATER));
+    public static final DeferredItem<Item> RUNE_ELEMENT_EARTH = ITEMS.register("rune_element_earth", () -> new RuneItem(SpellElement.EARTH));
+    public static final DeferredItem<Item> RUNE_ELEMENT_AIR = ITEMS.register("rune_element_air", () -> new RuneItem(SpellElement.AIR));
+    public static final DeferredItem<Item> RUNE_ELEMENT_LIGHT = ITEMS.register("rune_element_light", () -> new RuneItem(SpellElement.LIGHT));
+    public static final DeferredItem<Item> RUNE_ELEMENT_DARK = ITEMS.register("rune_element_dark", () -> new RuneItem(SpellElement.DARK));
+    public static final DeferredItem<Item> RUNE_ELEMENT_ORDER = ITEMS.register("rune_element_order", () -> new RuneItem(SpellElement.ORDER));
+    public static final DeferredItem<Item> RUNE_ELEMENT_CHAOS = ITEMS.register("rune_element_chaos", () -> new RuneItem(SpellElement.CHAOS));
+    public static final DeferredItem<Item> RUNE_ELEMENT_CREATION = ITEMS.register("rune_element_creation", () -> new RuneItem(SpellElement.CREATION));
+    public static final DeferredItem<Item> RUNE_ELEMENT_DESTRUCTION = ITEMS.register("rune_element_destruction", () -> new RuneItem(SpellElement.DESTRUCTION));
+
 }

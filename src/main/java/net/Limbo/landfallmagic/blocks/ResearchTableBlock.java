@@ -1,21 +1,31 @@
 package net.Limbo.landfallmagic.blocks;
 
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.MapColor;
-import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraft.world.phys.shapes.Shapes;
-import net.minecraft.world.level.BlockGetter;
+import com.mojang.serialization.MapCodec;
+import net.Limbo.landfallmagic.ModBlockEntities;
+import net.Limbo.landfallmagic.entity.ResearchTableBlockEntity;
+import net.Limbo.landfallmagic.entity.TickingBlockEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jetbrains.annotations.Nullable;
 
-public class ResearchTableBlock extends Block {
+public class ResearchTableBlock extends BaseEntityBlock {
 
-    // Define the complex research table shape based on your model
-    // This shape assumes the block is facing a certain direction.
-    // We will now treat it as always facing "north" for simplicity.
     private static final VoxelShape SHAPE = Shapes.or(
             Block.box(2, 0, -4, 14, 12, -2),   // northeastleg
             Block.box(12, 0, 18, 14, 12, 20), // southwestleg
@@ -28,17 +38,48 @@ public class ResearchTableBlock extends Block {
             Block.box(4, 7, -4, 12, 12, -3)    // northtableflap
     );
 
-    public ResearchTableBlock() {
-        super(BlockBehaviour.Properties.of()
-                .mapColor(MapColor.COLOR_RED)
-                .strength(3.0F, 6.0F)
-                .sound(SoundType.WOOD)
-                .requiresCorrectToolForDrops()
-                .noOcclusion());
+    public ResearchTableBlock(BlockBehaviour.Properties properties) {
+        super(properties);
     }
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPE;
+    }
+
+    @Override
+    protected MapCodec<? extends BaseEntityBlock> codec() {
+        return simpleCodec(ResearchTableBlock::new);
+    }
+
+    @Nullable
+    @Override
+    public BlockEntity newBlockEntity(BlockPos pPos, BlockState pState) {
+        return new ResearchTableBlockEntity(pPos, pState);
+    }
+
+    @Override
+    public RenderShape getRenderShape(BlockState pState) {
+        return RenderShape.MODEL;
+    }
+
+    @Override
+    public InteractionResult useWithoutItem(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, BlockHitResult pHit) {
+        if (!pLevel.isClientSide()) {
+            BlockEntity entity = pLevel.getBlockEntity(pPos);
+            if(entity instanceof ResearchTableBlockEntity researchTableBE) {
+                ((ServerPlayer)pPlayer).openMenu(researchTableBE, buffer -> buffer.writeBlockPos(pPos));
+            }
+        }
+        return InteractionResult.sidedSuccess(pLevel.isClientSide());
+    }
+
+    @Nullable
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level pLevel, BlockState pState, BlockEntityType<T> pBlockEntityType) {
+        if (pLevel.isClientSide()) {
+            return null;
+        }
+        return createTickerHelper(pBlockEntityType, ModBlockEntities.RESEARCH_TABLE_BE.get(), TickingBlockEntity::tick);
     }
 }

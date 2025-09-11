@@ -327,5 +327,25 @@
   "item.landfallmagic.obliterator_helmet": "Obliterator's Helm",
   "item.landfallmagic.obliterator_chestplate": "Obliterator's Carapace",
   "item.landfallmagic.obliterator_leggings": "Obliterator's Greaves",
-  "item.landfallmagic.obliterator_boots": "Obliterator's Sabatons"
+  "item.landfallmagic.obliterator_boots": "Obliterator's Sabatons",
+
+
+  "item.landfallmagic.spell_page": "Blank Spell Page",
+  "item.landfallmagic.spell_page.named": "Spell Page: %s",
+
+  "item.landfallmagic.rune_form_projectile": "Rune of Projectiles",
+  "item.landfallmagic.rune_form_self": "Rune of Self",
+  "item.landfallmagic.rune_form_touch": "Rune of Touch",
+  "item.landfallmagic.rune_form_zone": "Rune of Zones",
+
+  "item.landfallmagic.rune_element_fire": "Rune of Fire",
+  "item.landfallmagic.rune_element_water": "Rune of Water",
+  "item.landfallmagic.rune_element_earth": "Rune of Earth",
+  "item.landfallmagic.rune_element_air": "Rune of Air",
+  "item.landfallmagic.rune_element_light": "Rune of Light",
+  "item.landfallmagic.rune_element_dark": "Rune of Dark",
+  "item.landfallmagic.rune_element_order": "Rune of Order",
+  "item.landfallmagic.rune_element_chaos": "Rune of Chaos",
+  "item.landfallmagic.rune_element_creation": "Rune of Creation",
+  "item.landfallmagic.rune_element_destruction": "Rune of Destruction"
 }

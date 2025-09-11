@@ -4,19 +4,15 @@ import net.Limbo.landfallmagic.blocks.*;
 import net.Limbo.landfallmagic.blocks.tree.*;
 import net.Limbo.landfallmagic.karma.KarmaNodeBlock;
 import net.Limbo.landfallmagic.karma.KarmaType;
-import net.Limbo.landfallmagic.worldgen.BiomeModifications;
 import net.Limbo.landfallmagic.worldgen.ModTreeGrowers;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.block.grower.TreeGrower;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
-
-import java.util.Optional;
 
 public class ModBlocks {
 
@@ -134,7 +130,13 @@ public class ModBlocks {
     public static final DeferredItem<BlockItem> DESTRUCTION_NODE_ITEM = ITEMS.registerSimpleBlockItem("destruction_node", DESTRUCTION_NODE);
 
     // --- OTHER BLOCKS ---
-    public static final DeferredBlock<Block> RESEARCH_TABLE = BLOCKS.register("research_table", ResearchTableBlock::new);
+    public static final DeferredBlock<Block> RESEARCH_TABLE = BLOCKS.register("research_table",
+            () -> new ResearchTableBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_RED)
+                    .strength(3.0F, 6.0F)
+                    .sound(SoundType.WOOD)
+                    .requiresCorrectToolForDrops()
+                    .noOcclusion()));
     public static final DeferredItem<BlockItem> RESEARCH_TABLE_ITEM = ITEMS.registerSimpleBlockItem("research_table", RESEARCH_TABLE);
 
     public static final DeferredBlock<Block> KARMA_CONDENSER = BLOCKS.register("karma_condenser", () -> new KarmaCondenserBlock(BlockBehaviour.Properties.of()
