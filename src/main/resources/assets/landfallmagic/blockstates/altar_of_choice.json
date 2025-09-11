@@ -1,7 +1,5 @@
 {
   "variants": {
-    "": {
-      "model": "landfallmagic:block/altar_of_choice"
-    }
+    "": { "model": "landfallmagic:block/altar_of_choice" }
   }
 }

@@ -166,6 +166,7 @@ public class ModBlocks {
                     .strength(3.0f, 6.0f)  // Hardness and resistance
                     .sound(SoundType.STONE)  // Block sound
                     .requiresCorrectToolForDrops()  // Needs proper tool
+                    .noOcclusion()
             )
     );
     public static final DeferredItem<BlockItem> ALTAR_OF_CHOICE_ITEM = ITEMS.registerSimpleBlockItem("altar_of_choice", ALTAR_OF_CHOICE);

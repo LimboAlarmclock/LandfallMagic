@@ -1,7 +1,6 @@
 {
-  "parent": "landfallmagic:block/ritual_altar",
+  "parent": "minecraft:block/cube_all",
   "textures": {
-    "0": "landfallmagic:block/altar_of_choice",
-    "particle": "landfallmagic:block/altar_of_choice"
+    "all": "landfallmagic:block/altar_of_choice"
   }
 }
