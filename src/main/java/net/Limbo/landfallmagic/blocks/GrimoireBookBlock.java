@@ -8,8 +8,10 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
@@ -22,29 +24,12 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.Shapes;
-import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
 public class GrimoireBookBlock extends BaseEntityBlock {
 
     public static final BooleanProperty OPEN = BooleanProperty.create("open");
     public static final MapCodec<GrimoireBookBlock> CODEC = simpleCodec(GrimoireBookBlock::new);
-
-    private static final VoxelShape CLOSED_SHAPE = Shapes.or(
-            Block.box(1, 0, 4, 15, 1, 13),
-            Block.box(1, 2, 4, 15, 3, 13),
-            Block.box(2, 1, 4, 14, 2, 12),
-            Block.box(1, 1, 3, 15, 2, 4)
-    );
-
-    private static final VoxelShape OPEN_SHAPE = Shapes.or(
-            Block.box(1, 0, 8, 15, 1, 17),
-            Block.box(1, 0, -1, 15, 1, 8),
-            Block.box(2, 1, -2, 14, 1.25, 16),
-            Block.box(1, 0, 6.5, 15, 1, 8.5)
-    );
 
     public GrimoireBookBlock(BlockBehaviour.Properties properties) {
         super(properties);
@@ -54,10 +39,42 @@ public class GrimoireBookBlock extends BaseEntityBlock {
     public GrimoireBookBlock() {
         this(BlockBehaviour.Properties.of()
                 .mapColor(MapColor.COLOR_GRAY)
-                .strength(1.0F, 3.0F)
+                .strength(2.0F, 3.0F)
                 .sound(SoundType.WOOD)
                 .noOcclusion());
     }
+
+    // This method is called when the block is placed in the world.
+    @Override
+    public void setPlacedBy(Level pLevel, BlockPos pPos, BlockState pState, @Nullable LivingEntity pPlacer, ItemStack pStack) {
+        super.setPlacedBy(pLevel, pPos, pState, pPlacer, pStack);
+        if (!pLevel.isClientSide) {
+            BlockEntity be = pLevel.getBlockEntity(pPos);
+            if (be instanceof GrimoireBlockEntity grimoireBE) {
+                // We load the inventory from the item stack that was used to place the block.
+                grimoireBE.loadFromItem(pStack);
+            }
+        }
+    }
+
+    // This method is called to remove the block and its entity, dropping items.
+    // We override it to ensure the block entity's data is saved before drops are calculated.
+    @Override
+    public BlockState playerWillDestroy(Level pLevel, BlockPos pPos, BlockState pState, Player pPlayer) {
+        BlockEntity blockentity = pLevel.getBlockEntity(pPos);
+        if (blockentity instanceof GrimoireBlockEntity grimoireBE) {
+            if (!pLevel.isClientSide && !pPlayer.isCreative()) {
+                ItemStack itemstack = new ItemStack(this);
+                grimoireBE.saveInventoryToItemStack(itemstack);
+                ItemEntity itementity = new ItemEntity(pLevel, (double)pPos.getX() + 0.5, (double)pPos.getY() + 0.5, (double)pPos.getZ() + 0.5, itemstack);
+                itementity.setDefaultPickUpDelay();
+                pLevel.addFreshEntity(itementity);
+            }
+        }
+
+        return super.playerWillDestroy(pLevel, pPos, pState, pPlayer);
+    }
+
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
@@ -88,7 +105,6 @@ public class GrimoireBookBlock extends BaseEntityBlock {
                 BlockEntity entity = pLevel.getBlockEntity(pPos);
                 if (entity instanceof GrimoireBlockEntity grimoireBlockEntity) {
                     ((ServerPlayer) pPlayer).openMenu(grimoireBlockEntity, buffer -> {
-                        // We now send both the block's position and the player's magic school
                         buffer.writeBlockPos(pPos);
                         buffer.writeEnum(PlayerMagicHelper.getPlayerMagicSchool(pPlayer));
                     });
@@ -99,10 +115,5 @@ public class GrimoireBookBlock extends BaseEntityBlock {
             }
         }
         return InteractionResult.sidedSuccess(pLevel.isClientSide());
-    }
-
-    @Override
-    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return state.getValue(OPEN) ? OPEN_SHAPE : CLOSED_SHAPE;
     }
 }

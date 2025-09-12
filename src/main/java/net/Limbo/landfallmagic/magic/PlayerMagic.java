@@ -1,4 +1,3 @@
-// Fixed PlayerMagic.java - Remove INBTSerializable, use proper attachment serialization
 package net.Limbo.landfallmagic.magic;
 
 import com.mojang.serialization.Codec;
@@ -13,12 +12,10 @@ public class PlayerMagic implements IPlayerMagic {
 
     private MagicSchool magicSchool;
 
-    // Default constructor (required)
     public PlayerMagic() {
         this.magicSchool = MagicSchool.NONE;
     }
 
-    // Constructor for codec
     public PlayerMagic(MagicSchool magicSchool) {
         this.magicSchool = magicSchool != null ? magicSchool : MagicSchool.NONE;
     }

@@ -16,6 +16,7 @@ import net.minecraft.network.chat.Component;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
@@ -30,14 +31,12 @@ public class ClientEvents {
 
     @SubscribeEvent
     public static void onRegisterKeyMappings(RegisterKeyMappingsEvent event) {
-        // The Grimoire key is removed, we only register the overlay key now.
         event.register(ForgeBusEvents.KARMA_OVERLAY_KEY);
     }
 
     @SubscribeEvent
     public static void onRegisterMenuScreens(RegisterMenuScreensEvent event) {
         event.register(ModMenuTypes.RESEARCH_TABLE_MENU.get(), ResearchTableScreen::new);
-        // Register our new, server-driven Grimoire Screen
         event.register(ModMenuTypes.GRIMOIRE_MENU.get(), GrimoireScreen::new);
     }
 
@@ -45,6 +44,8 @@ public class ClientEvents {
     public static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.DIRE_WOLF.get(), DireWolfRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.KARMA_CONDENSER_BE.get(), KarmaCondenserRenderer::new);
+        event.registerEntityRenderer(ModEntities.IGNITION_BOLT.get(), ThrownItemRenderer::new);
+
     }
 
     @SubscribeEvent
@@ -55,7 +56,6 @@ public class ClientEvents {
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
         ItemBlockRenderTypes.setRenderLayer(ModBlocks.RESEARCH_TABLE.get(), RenderType.cutout());
-        // Register the event bus for handling key presses and other client events
         NeoForge.EVENT_BUS.register(new ForgeBusEvents());
     }
 
@@ -70,7 +70,6 @@ public class ClientEvents {
 
         @SubscribeEvent
         public void onClientDisconnect(ClientPlayerNetworkEvent.LoggingOut event) {
-            // Clear karma data when leaving a world to prevent seeing old data
             ClientKarmaManager.clearAll();
             landfallmagic.LOGGER.info("Cleared client karma data on disconnect");
         }
@@ -82,7 +81,6 @@ public class ClientEvents {
                 return;
             }
 
-            // Check if the Karma Overlay key was pressed
             if (KARMA_OVERLAY_KEY.consumeClick()) {
                 net.minecraft.world.level.ChunkPos playerChunk = new net.minecraft.world.level.ChunkPos(mc.player.blockPosition());
                 if (!ClientKarmaManager.hasKarmaData(playerChunk)) {

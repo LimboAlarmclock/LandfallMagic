@@ -6,6 +6,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import net.Limbo.landfallmagic.entity.sorcerery.FireballProjectileEntity;
 
 public class ModEntities {
     public static final DeferredRegister<EntityType<?>> ENTITY_TYPES =
@@ -16,4 +17,10 @@ public class ModEntities {
                     () -> EntityType.Builder.of(DireWolfEntity::new, MobCategory.MONSTER)
                             .sized(0.8f, 0.9f) // width, height
                             .build("dire_wolf"));
+    public static final DeferredHolder<EntityType<?>, EntityType<FireballProjectileEntity>> IGNITION_BOLT =
+            ENTITY_TYPES.register("ignition_bolt",
+                    () -> EntityType.Builder.<FireballProjectileEntity>of(FireballProjectileEntity::new, MobCategory.MISC)
+                            .sized(0.25F, 0.25F)
+                            .clientTrackingRange(4).updateInterval(10)
+                            .build("ignition_bolt"));
 }

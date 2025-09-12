@@ -20,6 +20,7 @@ public class ModBlockEntities {
             BLOCK_ENTITIES.register("research_table", () ->
                     BlockEntityType.Builder.of(ResearchTableBlockEntity::new,
                             ModBlocks.RESEARCH_TABLE.get()).build(null));
+    // Add this back in ModBlockEntities.java
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<GrimoireBlockEntity>> GRIMOIRE_BE =
             BLOCK_ENTITIES.register("grimoire", () ->
                     BlockEntityType.Builder.of(GrimoireBlockEntity::new,

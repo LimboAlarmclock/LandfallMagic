@@ -166,9 +166,9 @@ public class ModBlocks {
 
     public static final DeferredBlock<Block> ALTAR_OF_CHOICE = BLOCKS.register("altar_of_choice",
             () -> new AltarOfChoiceBlock(BlockBehaviour.Properties.of()
-                    .strength(3.0f, 6.0f)  // Hardness and resistance
-                    .sound(SoundType.STONE)  // Block sound
-                    .requiresCorrectToolForDrops()  // Needs proper tool
+                    .strength(3.0f, 6.0f)
+                    .sound(SoundType.STONE)
+                    .requiresCorrectToolForDrops()
                     .noOcclusion()
             )
     );

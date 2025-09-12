@@ -21,7 +21,7 @@ public class SpellRecipeRegistry {
 
         // --- TIER 1 RECIPES (Base Spells) ---
         // Projectiles
-        Tier1SpellRecipe fireball = addTier1Recipe(SpellForm.PROJECTILE, SpellElement.FIRE, "Fireball");
+        Tier1SpellRecipe fireball = addTier1Recipe(SpellForm.PROJECTILE, SpellElement.FIRE, "Ignition Bolt");
         Tier1SpellRecipe rockThrow = addTier1Recipe(SpellForm.PROJECTILE, SpellElement.EARTH, "Rock Throw");
         Tier1SpellRecipe waterJet = addTier1Recipe(SpellForm.PROJECTILE, SpellElement.WATER, "Water Jet");
         Tier1SpellRecipe gustBolt = addTier1Recipe(SpellForm.PROJECTILE, SpellElement.AIR, "Gust Bolt");

@@ -7,7 +7,6 @@ import net.Limbo.landfallmagic.menu.GrimoireMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
@@ -21,7 +20,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
+import java.util.List; // <-- THIS IMPORT WAS MISSING
 
 public class GrimoireBlockEntity extends BlockEntity implements MenuProvider {
 
@@ -29,6 +28,26 @@ public class GrimoireBlockEntity extends BlockEntity implements MenuProvider {
 
     public GrimoireBlockEntity(BlockPos pPos, BlockState pBlockState) {
         super(ModBlockEntities.GRIMOIRE_BE.get(), pPos, pBlockState);
+    }
+
+    // This helper method saves the inventory to an item stack's components
+    public void saveInventoryToItemStack(ItemStack stack) {
+        NonNullList<ItemStack> items = NonNullList.withSize(this.itemHandler.getSlots(), ItemStack.EMPTY);
+        for (int i = 0; i < this.itemHandler.getSlots(); i++) {
+            items.set(i, this.itemHandler.getStackInSlot(i));
+        }
+        stack.set(ModDataComponents.GRIMOIRE_CONTENTS.get(), ItemContainerContents.fromItems(items));
+    }
+
+    // This helper method loads the inventory from an item stack's components
+    public void loadFromItem(ItemStack stack) {
+        ItemContainerContents contents = stack.get(ModDataComponents.GRIMOIRE_CONTENTS.get());
+        if (contents != null) {
+            List<ItemStack> items = contents.stream().toList();
+            for (int i = 0; i < this.itemHandler.getSlots(); i++) {
+                this.itemHandler.setStackInSlot(i, i < items.size() ? items.get(i) : ItemStack.EMPTY);
+            }
+        }
     }
 
     @Override
@@ -42,43 +61,15 @@ public class GrimoireBlockEntity extends BlockEntity implements MenuProvider {
         return new GrimoireMenu(pContainerId, pPlayerInventory, this, PlayerMagicHelper.getPlayerMagicSchool(pPlayer));
     }
 
-    // This saves the inventory when the world/chunk is saved to disk
     @Override
     protected void saveAdditional(CompoundTag pTag, HolderLookup.Provider pRegistries) {
         super.saveAdditional(pTag, pRegistries);
         pTag.put("inventory", itemHandler.serializeNBT(pRegistries));
     }
 
-    // This loads the inventory when the world/chunk is loaded from disk
     @Override
     public void loadAdditional(CompoundTag pTag, HolderLookup.Provider pRegistries) {
         super.loadAdditional(pTag, pRegistries);
         itemHandler.deserializeNBT(pRegistries, pTag.getCompound("inventory"));
-    }
-
-    // --- THIS IS THE CORRECTED SECTION FOR ITEM COMPONENTS ---
-
-    // This method adds our inventory data TO an item stack when the block is broken
-    @Override
-    protected void collectImplicitComponents(DataComponentMap.Builder pComponents) {
-        super.collectImplicitComponents(pComponents);
-        NonNullList<ItemStack> items = NonNullList.withSize(this.itemHandler.getSlots(), ItemStack.EMPTY);
-        for (int i = 0; i < this.itemHandler.getSlots(); i++) {
-            items.set(i, this.itemHandler.getStackInSlot(i));
-        }
-        pComponents.set(ModDataComponents.GRIMOIRE_CONTENTS.get(), ItemContainerContents.fromItems(items));
-    }
-
-    // This method loads the inventory FROM an item stack when the block is placed
-    @Override
-    protected void applyImplicitComponents(BlockEntity.DataComponentInput pComponents) {
-        super.applyImplicitComponents(pComponents);
-        ItemContainerContents contents = pComponents.get(ModDataComponents.GRIMOIRE_CONTENTS.get());
-        if (contents != null) {
-            List<ItemStack> items = contents.stream().toList();
-            for (int i = 0; i < this.itemHandler.getSlots(); i++) {
-                this.itemHandler.setStackInSlot(i, i < items.size() ? items.get(i) : ItemStack.EMPTY);
-            }
-        }
     }
 }
