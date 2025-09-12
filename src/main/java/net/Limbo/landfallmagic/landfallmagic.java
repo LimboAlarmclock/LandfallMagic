@@ -113,13 +113,13 @@ public class landfallmagic {
             Optional<Tier1SpellRecipe> fireballRecipe = SpellRecipeRegistry.findTier1Recipe(SpellForm.PROJECTILE, SpellElement.FIRE);
             landfallmagic.LOGGER.info("Fireball recipe exists: {}", fireballRecipe.isPresent());
             if (fireballRecipe.isPresent()) {
-                landfallmagic.LOGGER.info("  Result: {}", fireballRecipe.get().getResult().name);
+                landfallmagic.LOGGER.info("  Result: {}", fireballRecipe.get().getResult().name());
             }
 
             Optional<Tier1SpellRecipe> stoneSkinRecipe = SpellRecipeRegistry.findTier1Recipe(SpellForm.SELF, SpellElement.EARTH);
             landfallmagic.LOGGER.info("Stone Skin recipe exists: {}", stoneSkinRecipe.isPresent());
             if (stoneSkinRecipe.isPresent()) {
-                landfallmagic.LOGGER.info("  Result: {}", stoneSkinRecipe.get().getResult().name);
+                landfallmagic.LOGGER.info("  Result: {}", stoneSkinRecipe.get().getResult().name());
             }
 
             landfallmagic.LOGGER.info("=== END RECIPE DEBUG ===");

@@ -1,7 +1,6 @@
 package net.Limbo.landfallmagic.menu;
 
 import net.Limbo.landfallmagic.entity.ResearchTableBlockEntity;
-import net.Limbo.landfallmagic.landfallmagic;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -9,6 +8,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.SlotItemHandler;
 
 public class ResearchTableMenu extends AbstractContainerMenu {
@@ -23,35 +23,47 @@ public class ResearchTableMenu extends AbstractContainerMenu {
         super(ModMenuTypes.RESEARCH_TABLE_MENU.get(), pContainerId);
         this.blockEntity = (ResearchTableBlockEntity) entity;
 
-        // Debug the block entity
-        landfallmagic.LOGGER.info("Menu created for block entity at: {}", blockEntity.getBlockPos());
+        // Add the research table's slots
+        this.addSlot(new SlotItemHandler(blockEntity.itemHandler, 0, 26, 46)); // Input Slot 1
+        this.addSlot(new SlotItemHandler(blockEntity.itemHandler, 1, 80, 20)); // Input Slot 2
 
-        // Add the research table's slots with debug info
-        Slot slot0 = new SlotItemHandler(blockEntity.itemHandler, 0, 26, 46);
-        Slot slot1 = new SlotItemHandler(blockEntity.itemHandler, 1, 80, 20);
-        Slot slot2 = new SlotItemHandler(blockEntity.itemHandler, 2, 134, 46);
-
-        this.addSlot(slot0); // Catalyst Slot
-        this.addSlot(slot1); // Main Input Slot
-        this.addSlot(slot2); // Output Slot
-
-        landfallmagic.LOGGER.info("Research table slots added at positions:");
-        landfallmagic.LOGGER.info("  Slot 0: ({}, {})", slot0.x, slot0.y);
-        landfallmagic.LOGGER.info("  Slot 1: ({}, {})", slot1.x, slot1.y);
-        landfallmagic.LOGGER.info("  Slot 2: ({}, {})", slot2.x, slot2.y);
+        // Use the new ResultSlot for the output
+        this.addSlot(new ResultSlot(blockEntity.itemHandler, 2, 134, 46)); // Output Slot
 
         addPlayerInventory(inv);
         addPlayerHotbar(inv);
     }
 
-    // --- Helper methods and quickMoveStack remain the same ---
+    // --- Custom Result Slot ---
+    public static class ResultSlot extends SlotItemHandler {
+        public ResultSlot(IItemHandler itemHandler, int index, int xPosition, int yPosition) {
+            super(itemHandler, index, xPosition, yPosition);
+        }
+
+        @Override
+        public boolean mayPlace(ItemStack stack) {
+            // Players can't place items into the result slot
+            return false;
+        }
+
+        @Override
+        public void onTake(Player thePlayer, ItemStack stack) {
+            // When the result is taken, consume the ingredients from the input slots
+            this.getItemHandler().extractItem(0, 1, false);
+            this.getItemHandler().extractItem(1, 1, false);
+            super.onTake(thePlayer, stack);
+        }
+    }
+
+
+    // --- Helper methods and quickMoveStack ---
     private static final int HOTBAR_SLOT_COUNT = 9;
     private static final int PLAYER_INVENTORY_ROW_COUNT = 3;
     private static final int PLAYER_INVENTORY_COLUMN_COUNT = 9;
     private static final int PLAYER_INVENTORY_SLOT_COUNT = PLAYER_INVENTORY_COLUMN_COUNT * PLAYER_INVENTORY_ROW_COUNT;
     private static final int VANILLA_SLOT_COUNT = HOTBAR_SLOT_COUNT + PLAYER_INVENTORY_SLOT_COUNT;
     private static final int VANILLA_FIRST_SLOT_INDEX = 0;
-    private static final int TE_INVENTORY_FIRST_SLOT_INDEX = VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT;
+    private static final int TE_INVENTORY_FIRST_SLOT_INDEX = 0; // Block entity slots start at 0
     private static final int TE_INVENTORY_SLOT_COUNT = 3;
 
     @Override
@@ -61,22 +73,36 @@ public class ResearchTableMenu extends AbstractContainerMenu {
         ItemStack sourceStack = sourceSlot.getItem();
         ItemStack copyOfSourceStack = sourceStack.copy();
 
-        if (index < VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT) {
-            if (!moveItemStackTo(sourceStack, TE_INVENTORY_FIRST_SLOT_INDEX, TE_INVENTORY_FIRST_SLOT_INDEX + TE_INVENTORY_SLOT_COUNT, false)) {
+        // If the slot is the result slot (index 2)
+        if (index == 2) {
+            if (!this.moveItemStackTo(sourceStack, 3, 39, true)) { // Move to player inv
                 return ItemStack.EMPTY;
             }
-        } else if (index < TE_INVENTORY_FIRST_SLOT_INDEX + TE_INVENTORY_SLOT_COUNT) {
-            if (!moveItemStackTo(sourceStack, VANILLA_FIRST_SLOT_INDEX, VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT, false)) {
-                return ItemStack.EMPTY;
-            }
-        } else {
-            return ItemStack.EMPTY;
+            sourceSlot.onQuickCraft(sourceStack, copyOfSourceStack);
         }
-        if (sourceStack.getCount() == 0) {
+        // If moving from player inventory (index 3 to 38) to our inputs
+        else if (index >= 3 && index < 39) {
+            if (!this.moveItemStackTo(sourceStack, 0, 2, false)) { // Move to input slots 0 or 1
+                return ItemStack.EMPTY;
+            }
+        }
+        // If moving from our inputs (index 0 or 1) to player inventory
+        else if (index < 3) {
+            if (!this.moveItemStackTo(sourceStack, 3, 39, false)) {
+                return ItemStack.EMPTY;
+            }
+        }
+
+        if (sourceStack.isEmpty()) {
             sourceSlot.set(ItemStack.EMPTY);
         } else {
             sourceSlot.setChanged();
         }
+
+        if (sourceStack.getCount() == copyOfSourceStack.getCount()) {
+            return ItemStack.EMPTY;
+        }
+
         sourceSlot.onTake(playerIn, sourceStack);
         return copyOfSourceStack;
     }

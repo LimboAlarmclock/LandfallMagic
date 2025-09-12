@@ -1,15 +1,15 @@
 package net.Limbo.landfallmagic;
 
-import net.Limbo.landfallmagic.client.screen.ResearchTableScreen;
 import net.Limbo.landfallmagic.client.model.DireWolfModel;
 import net.Limbo.landfallmagic.client.model.ModModelLayers;
 import net.Limbo.landfallmagic.client.renderer.DireWolfRenderer;
 import net.Limbo.landfallmagic.client.renderer.KarmaCondenserRenderer;
+import net.Limbo.landfallmagic.client.screen.GrimoireScreen;
+import net.Limbo.landfallmagic.client.screen.ResearchTableScreen;
 import net.Limbo.landfallmagic.karma.client.ClientKarmaManager;
 import net.Limbo.landfallmagic.menu.ModMenuTypes;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
@@ -17,7 +17,11 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.neoforge.client.event.*;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.InputEvent;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import org.lwjgl.glfw.GLFW;
 
@@ -26,14 +30,15 @@ public class ClientEvents {
 
     @SubscribeEvent
     public static void onRegisterKeyMappings(RegisterKeyMappingsEvent event) {
-        event.register(ForgeBusEvents.OPEN_GRIMOIRE_KEY);
+        // The Grimoire key is removed, we only register the overlay key now.
         event.register(ForgeBusEvents.KARMA_OVERLAY_KEY);
     }
 
-    // --- NEW METHOD FOR REGISTERING SCREENS ---
     @SubscribeEvent
     public static void onRegisterMenuScreens(RegisterMenuScreensEvent event) {
-        event.register(ModMenuTypes.RESEARCH_TABLE_MENU.get(), net.Limbo.landfallmagic.client.screen.ResearchTableScreen::new);
+        event.register(ModMenuTypes.RESEARCH_TABLE_MENU.get(), ResearchTableScreen::new);
+        // Register our new, server-driven Grimoire Screen
+        event.register(ModMenuTypes.GRIMOIRE_MENU.get(), GrimoireScreen::new);
     }
 
     @SubscribeEvent
@@ -49,29 +54,13 @@ public class ClientEvents {
 
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
-        // The registration call is removed from here
-
         ItemBlockRenderTypes.setRenderLayer(ModBlocks.RESEARCH_TABLE.get(), RenderType.cutout());
-        landfallmagic.LOGGER.info("HELLO FROM CLIENT SETUP");
-        landfallmagic.LOGGER.info("MINECRAFT NAME >> {}", Minecraft.getInstance().getUser().getName());
-        landfallmagic.LOGGER.info("Initializing Holographic GUI System...");
-        landfallmagic.LOGGER.info("  Hologram Stability Time: {}ms", Config.HOLOGRAM_STABILITY_TIME.get());
-        landfallmagic.LOGGER.info("  Hologram Particle Count: {}", Config.HOLOGRAM_PARTICLE_COUNT.get());
-        landfallmagic.LOGGER.info("  Flicker Intensity: {}", Config.HOLOGRAM_FLICKER_INTENSITY.get());
-        landfallmagic.LOGGER.info("  Sound Effects: {}", Config.ENABLE_HOLOGRAM_SOUND.get());
-        landfallmagic.LOGGER.info("  Scanning Lines: {}", Config.ENABLE_SCANNING_LINES.get());
-        landfallmagic.LOGGER.info("  Alpha Level: {}", Config.HOLOGRAM_ALPHA_LEVEL.get());
-
+        // Register the event bus for handling key presses and other client events
         NeoForge.EVENT_BUS.register(new ForgeBusEvents());
     }
 
+    // Inner class for events on the Forge event bus
     public static class ForgeBusEvents {
-
-        public static final KeyMapping OPEN_GRIMOIRE_KEY = new KeyMapping(
-                "key.landfallmagic.open_grimoire",
-                GLFW.GLFW_KEY_G,
-                "key.categories.landfallmagic"
-        );
 
         public static final KeyMapping KARMA_OVERLAY_KEY = new KeyMapping(
                 "key.landfallmagic.karma_overlay",
@@ -81,6 +70,7 @@ public class ClientEvents {
 
         @SubscribeEvent
         public void onClientDisconnect(ClientPlayerNetworkEvent.LoggingOut event) {
+            // Clear karma data when leaving a world to prevent seeing old data
             ClientKarmaManager.clearAll();
             landfallmagic.LOGGER.info("Cleared client karma data on disconnect");
         }
@@ -92,53 +82,13 @@ public class ClientEvents {
                 return;
             }
 
-            if (OPEN_GRIMOIRE_KEY.consumeClick()) {
-                if (hasGrimoireAccess(mc.player)) {
-                    ClientKarmaManager.requestKarmaDataAroundPlayer(2);
-                    mc.setScreen(new GrimoireScreen());
-                    // This message was missing a key in your lang file, so I'm using a literal for now
-                    mc.player.displayClientMessage(Component.literal("Grimoire Opened"), true);
-                    playHologramActivationSound(mc);
-                } else {
-                    mc.player.displayClientMessage(Component.translatable("message.landfallmagic.grimoire_required"), true);
-                }
-            }
-
+            // Check if the Karma Overlay key was pressed
             if (KARMA_OVERLAY_KEY.consumeClick()) {
                 net.minecraft.world.level.ChunkPos playerChunk = new net.minecraft.world.level.ChunkPos(mc.player.blockPosition());
                 if (!ClientKarmaManager.hasKarmaData(playerChunk)) {
                     ClientKarmaManager.requestCurrentChunkKarma();
                 }
                 toggleKarmaOverlay();
-            }
-        }
-
-        private boolean hasGrimoireAccess(net.minecraft.world.entity.player.Player player) {
-            for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
-                if (player.getInventory().getItem(i).getItem() == ModBlocks.GRIMOIRE_BOOK_ITEM.get()) {
-                    return true;
-                }
-            }
-            net.minecraft.core.BlockPos playerPos = player.blockPosition();
-            for (int x = -5; x <= 5; x++) {
-                for (int y = -3; y <= 3; y++) {
-                    for (int z = -5; z <= 5; z++) {
-                        if (player.level().getBlockState(playerPos.offset(x, y, z)).getBlock() == ModBlocks.GRIMOIRE_BOOK.get()) {
-                            return true;
-                        }
-                    }
-                }
-            }
-            return false;
-        }
-
-        private void playHologramActivationSound(Minecraft mc) {
-            if (Config.ENABLE_HOLOGRAM_SOUND.get()) {
-                mc.getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(
-                        net.minecraft.sounds.SoundEvents.BEACON_ACTIVATE,
-                        1.0f + (mc.level.random.nextFloat() - 0.5f) * 0.2f,
-                        0.3f
-                ));
             }
         }
 
@@ -151,8 +101,7 @@ public class ClientEvents {
                     net.minecraft.nbt.CompoundTag karmaData = ClientKarmaManager.getKarma(playerChunk);
                     mc.player.displayClientMessage(Component.literal("Karma Overlay - Chunk " + playerChunk + ": " + karmaData), false);
                 } else {
-                    // This was also missing a key, so using a literal
-                    mc.player.displayClientMessage(Component.literal("No karma data for this chunk. Press 'K' again to request."), true);
+                    mc.player.displayClientMessage(Component.translatable("message.landfallmagic.karma_overlay_no_data"), true);
                 }
             }
         }

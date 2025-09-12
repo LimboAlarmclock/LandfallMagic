@@ -561,7 +561,7 @@ public class SpellRecipeRegistry {
     }
 
     private static void addTier2Recipe(Spell baseSpell, SpellElement augment, String newName) {
-        Spell augmentedSpell = new Spell(baseSpell.form, baseSpell.primaryElement, augment, newName);
+        Spell augmentedSpell = new Spell(baseSpell.form(), baseSpell.primaryElement(), augment, newName);
         TIER_2_RECIPES.add(new Tier2SpellRecipe(baseSpell, augment, augmentedSpell));
     }
 
@@ -583,7 +583,7 @@ public class SpellRecipeRegistry {
 
             for (Tier1SpellRecipe recipe : TIER_1_RECIPES) {
                 if (recipe.form() == form && recipe.element() == element) {
-                    landfallmagic.LOGGER.info("Found matching recipe: {}", recipe.getResult().name);
+                    landfallmagic.LOGGER.info("Found matching recipe: {}", recipe.getResult().name());
                     return Optional.of(recipe);
                 }
             }
@@ -602,7 +602,7 @@ public class SpellRecipeRegistry {
         if (baseSpell == null || augment == null || baseSpell.isAugmented()) return Optional.empty();
         // CORRECTED THIS LINE
         return TIER_2_RECIPES.stream()
-                .filter(r -> Objects.equals(r.baseSpell().name, baseSpell.name) && r.augment() == augment)
+                .filter(r -> Objects.equals(r.baseSpell().name(), baseSpell.name()) && r.augment() == augment)
                 .findFirst();
     }
 
@@ -617,12 +617,12 @@ public class SpellRecipeRegistry {
         TIER_1_RECIPES.stream()
                 .limit(5)
                 .forEach(recipe -> landfallmagic.LOGGER.info("  {} + {} = {}",
-                        recipe.form(), recipe.element(), recipe.getResult().name));
+                        recipe.form(), recipe.element(), recipe.getResult().name()));
 
         // Check if specific recipe exists
         Optional<Tier1SpellRecipe> testRecipe = findTier1Recipe(SpellForm.PROJECTILE, SpellElement.FIRE);
         if (testRecipe.isPresent()) {
-            landfallmagic.LOGGER.info("Test recipe (PROJECTILE + FIRE) found: {}", testRecipe.get().getResult().name);
+            landfallmagic.LOGGER.info("Test recipe (PROJECTILE + FIRE) found: {}", testRecipe.get().getResult().name());
         } else {
             landfallmagic.LOGGER.error("Test recipe (PROJECTILE + FIRE) NOT FOUND!");
         }

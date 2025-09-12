@@ -148,7 +148,8 @@ public class ModBlocks {
             .lightLevel(state -> 8))); // Magical glow
     public static final DeferredItem<BlockItem> KARMA_CONDENSER_ITEM = ITEMS.registerSimpleBlockItem("karma_condenser", KARMA_CONDENSER);
 
-    public static final DeferredBlock<Block> GRIMOIRE_BOOK = BLOCKS.register("grimoire_book", GrimoireBookBlock::new);
+    // *** THIS IS THE CORRECTED LINE ***
+    public static final DeferredBlock<Block> GRIMOIRE_BOOK = BLOCKS.register("grimoire_book", () -> new GrimoireBookBlock());
     public static final DeferredItem<BlockItem> GRIMOIRE_BOOK_ITEM = ITEMS.registerSimpleBlockItem("grimoire_book", GRIMOIRE_BOOK);
 
     public static final DeferredBlock<Block> KARMA_FURNACE = BLOCKS.register("karma_furnace", KarmaFurnaceBlock::new);

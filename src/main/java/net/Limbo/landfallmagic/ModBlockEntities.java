@@ -1,5 +1,6 @@
 package net.Limbo.landfallmagic;
 
+import net.Limbo.landfallmagic.entity.GrimoireBlockEntity;
 import net.Limbo.landfallmagic.entity.KarmaCondenserBlockEntity;
 import net.Limbo.landfallmagic.entity.ResearchTableBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -19,4 +20,8 @@ public class ModBlockEntities {
             BLOCK_ENTITIES.register("research_table", () ->
                     BlockEntityType.Builder.of(ResearchTableBlockEntity::new,
                             ModBlocks.RESEARCH_TABLE.get()).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<GrimoireBlockEntity>> GRIMOIRE_BE =
+            BLOCK_ENTITIES.register("grimoire", () ->
+                    BlockEntityType.Builder.of(GrimoireBlockEntity::new,
+                            ModBlocks.GRIMOIRE_BOOK.get()).build(null));
 }

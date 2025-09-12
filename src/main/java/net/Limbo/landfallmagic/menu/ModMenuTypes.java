@@ -15,4 +15,8 @@ public class ModMenuTypes {
             MENUS.register("research_table_menu",
                     // Use a direct method reference now that the constructor signature matches
                     () -> IMenuTypeExtension.create(ResearchTableMenu::new));
+
+    public static final DeferredHolder<MenuType<?>, MenuType<GrimoireMenu>> GRIMOIRE_MENU =
+            MENUS.register("grimoire_menu",
+                    () -> IMenuTypeExtension.create(GrimoireMenu::new));
 }

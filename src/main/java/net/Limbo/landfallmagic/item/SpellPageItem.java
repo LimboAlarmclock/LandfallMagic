@@ -15,7 +15,7 @@ public class SpellPageItem extends Item {
 
     public static void setSpell(ItemStack stack, Spell spell) {
         try {
-            landfallmagic.LOGGER.info("SpellPageItem.setSpell called with spell: {}", spell != null ? spell.name : "NULL");
+            landfallmagic.LOGGER.info("SpellPageItem.setSpell called with spell: {}", spell != null ? spell.name() : "NULL");
 
             if (spell == null) {
                 landfallmagic.LOGGER.warn("Attempted to set null spell on ItemStack");
