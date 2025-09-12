@@ -2,6 +2,7 @@ package net.Limbo.landfallmagic.blocks;
 
 import com.mojang.serialization.MapCodec;
 import net.Limbo.landfallmagic.entity.GrimoireBlockEntity;
+import net.Limbo.landfallmagic.magic.PlayerMagicHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -50,13 +51,11 @@ public class GrimoireBookBlock extends BaseEntityBlock {
         this.registerDefaultState(this.stateDefinition.any().setValue(OPEN, false));
     }
 
-    // Default constructor for the codec
     public GrimoireBookBlock() {
         this(BlockBehaviour.Properties.of()
                 .mapColor(MapColor.COLOR_GRAY)
-                .strength(2.0F, 3.0F)
+                .strength(1.0F, 3.0F)
                 .sound(SoundType.WOOD)
-                .requiresCorrectToolForDrops()
                 .noOcclusion());
     }
 
@@ -86,13 +85,15 @@ public class GrimoireBookBlock extends BaseEntityBlock {
         if (!pLevel.isClientSide()) {
             boolean isOpen = pState.getValue(OPEN);
             if (isOpen) {
-                // If the book is open, open the menu
                 BlockEntity entity = pLevel.getBlockEntity(pPos);
-                if (entity instanceof GrimoireBlockEntity) {
-                    pPlayer.openMenu((GrimoireBlockEntity)entity);
+                if (entity instanceof GrimoireBlockEntity grimoireBlockEntity) {
+                    ((ServerPlayer) pPlayer).openMenu(grimoireBlockEntity, buffer -> {
+                        // We now send both the block's position and the player's magic school
+                        buffer.writeBlockPos(pPos);
+                        buffer.writeEnum(PlayerMagicHelper.getPlayerMagicSchool(pPlayer));
+                    });
                 }
             } else {
-                // If the book is closed, just open it
                 pLevel.setBlock(pPos, pState.setValue(OPEN, true), 3);
                 pLevel.playSound(null, pPos, SoundEvents.BOOK_PAGE_TURN, SoundSource.BLOCKS, 0.7f, 1.0f);
             }
