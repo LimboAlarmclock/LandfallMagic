@@ -77,9 +77,13 @@ public class ResearchTableBlock extends BaseEntityBlock {
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level pLevel, BlockState pState, BlockEntityType<T> pBlockEntityType) {
+        // This method should only be called when the block entity is created, not every tick!
         if (pLevel.isClientSide()) {
             return null;
         }
-        return createTickerHelper(pBlockEntityType, ModBlockEntities.RESEARCH_TABLE_BE.get(), TickingBlockEntity::tick);
+
+        // Use the standard createTickerHelper method - this is the correct way
+        return createTickerHelper(pBlockEntityType, ModBlockEntities.RESEARCH_TABLE_BE.get(),
+                (level, pos, state, blockEntity) -> blockEntity.tick());
     }
 }

@@ -8,6 +8,9 @@ import net.Limbo.landfallmagic.karma.KarmaNodeBlock;
 import net.Limbo.landfallmagic.magic.ModAttachments;
 import net.Limbo.landfallmagic.network.C2SKarmaRequestPacket;
 import net.Limbo.landfallmagic.network.S2CKarmaUpdatePacket;
+import net.Limbo.landfallmagic.spell.SpellElement;
+import net.Limbo.landfallmagic.spell.SpellForm;
+import net.Limbo.landfallmagic.spell.Tier1SpellRecipe;
 import net.Limbo.landfallmagic.worldgen.ModFeatures;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
@@ -44,6 +47,8 @@ import org.slf4j.Logger;
 import net.Limbo.landfallmagic.ModBlockEntities;
 import net.Limbo.landfallmagic.spell.SpellRecipeRegistry;
 import net.Limbo.landfallmagic.datagen.ModDataComponents;
+
+import java.util.Optional;
 
 @Mod(landfallmagic.MODID)
 @EventBusSubscriber(modid = landfallmagic.MODID, bus = EventBusSubscriber.Bus.MOD)
@@ -98,8 +103,26 @@ public class landfallmagic {
 
     private void commonSetup(FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
-            // This will load all your spell recipes into memory when the game starts
+            // Register recipes
             SpellRecipeRegistry.registerRecipes();
+
+            // Debug recipe registration
+            landfallmagic.LOGGER.info("=== RECIPE REGISTRATION DEBUG ===");
+
+            // Test a few specific recipes
+            Optional<Tier1SpellRecipe> fireballRecipe = SpellRecipeRegistry.findTier1Recipe(SpellForm.PROJECTILE, SpellElement.FIRE);
+            landfallmagic.LOGGER.info("Fireball recipe exists: {}", fireballRecipe.isPresent());
+            if (fireballRecipe.isPresent()) {
+                landfallmagic.LOGGER.info("  Result: {}", fireballRecipe.get().getResult().name);
+            }
+
+            Optional<Tier1SpellRecipe> stoneSkinRecipe = SpellRecipeRegistry.findTier1Recipe(SpellForm.SELF, SpellElement.EARTH);
+            landfallmagic.LOGGER.info("Stone Skin recipe exists: {}", stoneSkinRecipe.isPresent());
+            if (stoneSkinRecipe.isPresent()) {
+                landfallmagic.LOGGER.info("  Result: {}", stoneSkinRecipe.get().getResult().name);
+            }
+
+            landfallmagic.LOGGER.info("=== END RECIPE DEBUG ===");
         });
         LOGGER.info("HELLO FROM LANDFALL MAGIC COMMON SETUP");
     }

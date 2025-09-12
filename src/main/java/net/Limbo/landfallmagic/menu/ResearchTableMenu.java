@@ -1,6 +1,7 @@
 package net.Limbo.landfallmagic.menu;
 
 import net.Limbo.landfallmagic.entity.ResearchTableBlockEntity;
+import net.Limbo.landfallmagic.landfallmagic;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -18,15 +19,26 @@ public class ResearchTableMenu extends AbstractContainerMenu {
         this(pContainerId, inv, inv.player.level().getBlockEntity(extraData.readBlockPos()));
     }
 
-    // This is the primary server-side constructor
     public ResearchTableMenu(int pContainerId, Inventory inv, BlockEntity entity) {
         super(ModMenuTypes.RESEARCH_TABLE_MENU.get(), pContainerId);
         this.blockEntity = (ResearchTableBlockEntity) entity;
 
-        // Add the research table's slots
-        this.addSlot(new SlotItemHandler(blockEntity.itemHandler, 0, 26, 46)); // Catalyst Slot
-        this.addSlot(new SlotItemHandler(blockEntity.itemHandler, 1, 80, 20)); // Main Input Slot
-        this.addSlot(new SlotItemHandler(blockEntity.itemHandler, 2, 134, 46)); // Output Slot
+        // Debug the block entity
+        landfallmagic.LOGGER.info("Menu created for block entity at: {}", blockEntity.getBlockPos());
+
+        // Add the research table's slots with debug info
+        Slot slot0 = new SlotItemHandler(blockEntity.itemHandler, 0, 26, 46);
+        Slot slot1 = new SlotItemHandler(blockEntity.itemHandler, 1, 80, 20);
+        Slot slot2 = new SlotItemHandler(blockEntity.itemHandler, 2, 134, 46);
+
+        this.addSlot(slot0); // Catalyst Slot
+        this.addSlot(slot1); // Main Input Slot
+        this.addSlot(slot2); // Output Slot
+
+        landfallmagic.LOGGER.info("Research table slots added at positions:");
+        landfallmagic.LOGGER.info("  Slot 0: ({}, {})", slot0.x, slot0.y);
+        landfallmagic.LOGGER.info("  Slot 1: ({}, {})", slot1.x, slot1.y);
+        landfallmagic.LOGGER.info("  Slot 2: ({}, {})", slot2.x, slot2.y);
 
         addPlayerInventory(inv);
         addPlayerHotbar(inv);

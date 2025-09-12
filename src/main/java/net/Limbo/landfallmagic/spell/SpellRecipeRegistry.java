@@ -1,5 +1,7 @@
 package net.Limbo.landfallmagic.spell;
 
+import net.Limbo.landfallmagic.landfallmagic;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -564,10 +566,36 @@ public class SpellRecipeRegistry {
     }
 
     public static Optional<Tier1SpellRecipe> findTier1Recipe(SpellForm form, SpellElement element) {
-        if (form == null || element == null) return Optional.empty();
-        return TIER_1_RECIPES.stream()
-                .filter(r -> r.form() == form && r.element() == element)
-                .findFirst();
+        try {
+            landfallmagic.LOGGER.info("findTier1Recipe called with Form: {}, Element: {}", form, element);
+
+            if (form == null || element == null) {
+                landfallmagic.LOGGER.info("Form or element is null, returning empty");
+                return Optional.empty();
+            }
+
+            if (TIER_1_RECIPES == null) {
+                landfallmagic.LOGGER.error("TIER_1_RECIPES list is null!");
+                return Optional.empty();
+            }
+
+            landfallmagic.LOGGER.info("Searching {} tier 1 recipes", TIER_1_RECIPES.size());
+
+            for (Tier1SpellRecipe recipe : TIER_1_RECIPES) {
+                if (recipe.form() == form && recipe.element() == element) {
+                    landfallmagic.LOGGER.info("Found matching recipe: {}", recipe.getResult().name);
+                    return Optional.of(recipe);
+                }
+            }
+
+            landfallmagic.LOGGER.info("No matching recipe found");
+            return Optional.empty();
+
+        } catch (Exception e) {
+            landfallmagic.LOGGER.error("Error in findTier1Recipe: ", e);
+            e.printStackTrace();
+            return Optional.empty();
+        }
     }
 
     public static Optional<Tier2SpellRecipe> findTier2Recipe(Spell baseSpell, SpellElement augment) {
@@ -576,5 +604,27 @@ public class SpellRecipeRegistry {
         return TIER_2_RECIPES.stream()
                 .filter(r -> Objects.equals(r.baseSpell().name, baseSpell.name) && r.augment() == augment)
                 .findFirst();
+    }
+
+    public static void debugRecipes() {
+        landfallmagic.LOGGER.info("=== RECIPE REGISTRY DEBUG ===");
+        landfallmagic.LOGGER.info("Recipes registered: {}", recipesRegistered);
+        landfallmagic.LOGGER.info("Tier 1 recipes count: {}", TIER_1_RECIPES.size());
+        landfallmagic.LOGGER.info("Tier 2 recipes count: {}", TIER_2_RECIPES.size());
+
+        // List first few Tier 1 recipes
+        landfallmagic.LOGGER.info("First 5 Tier 1 recipes:");
+        TIER_1_RECIPES.stream()
+                .limit(5)
+                .forEach(recipe -> landfallmagic.LOGGER.info("  {} + {} = {}",
+                        recipe.form(), recipe.element(), recipe.getResult().name));
+
+        // Check if specific recipe exists
+        Optional<Tier1SpellRecipe> testRecipe = findTier1Recipe(SpellForm.PROJECTILE, SpellElement.FIRE);
+        if (testRecipe.isPresent()) {
+            landfallmagic.LOGGER.info("Test recipe (PROJECTILE + FIRE) found: {}", testRecipe.get().getResult().name);
+        } else {
+            landfallmagic.LOGGER.error("Test recipe (PROJECTILE + FIRE) NOT FOUND!");
+        }
     }
 }

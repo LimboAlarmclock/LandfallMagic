@@ -23,12 +23,14 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
-public class ResearchTableBlockEntity extends BlockEntity implements MenuProvider, TickingBlockEntity {
+public class ResearchTableBlockEntity extends BlockEntity implements MenuProvider {
 
     public final ItemStackHandler itemHandler = new ItemStackHandler(3);
+    private int tickCounter = 0;
 
     public ResearchTableBlockEntity(BlockPos pPos, BlockState pBlockState) {
         super(ModBlockEntities.RESEARCH_TABLE_BE.get(), pPos, pBlockState);
+        landfallmagic.LOGGER.info("ResearchTableBlockEntity created at: {}", pPos);
     }
 
     @Override
@@ -54,88 +56,147 @@ public class ResearchTableBlockEntity extends BlockEntity implements MenuProvide
         itemHandler.deserializeNBT(pRegistries, pTag.getCompound("inventory"));
     }
 
-    @Override
+    // This is the method that will be called every tick by the ticker
     public void tick() {
         if (level == null || level.isClientSide()) {
             return;
         }
 
-        // DEBUG: Check if the tick method is running at all
-        // You should see this message spamming your console. If not, the ticker isn't registered correctly.
-        // landfallmagic.LOGGER.info("Research Table is ticking!");
+        tickCounter++;
 
-        ItemStack input1 = itemHandler.getStackInSlot(0);
-        ItemStack input2 = itemHandler.getStackInSlot(1);
-
-        // No need to craft if inputs are empty
-        if (input1.isEmpty() || input2.isEmpty()) {
-            if (!itemHandler.getStackInSlot(2).isEmpty()) {
-                itemHandler.setStackInSlot(2, ItemStack.EMPTY); // Clear output if inputs are removed
+        try {
+            // Debug message every 20 ticks (1 second)
+            if (tickCounter % 20 == 0) {
+                landfallmagic.LOGGER.info("ResearchTableBlockEntity tick #{} at {}", tickCounter, worldPosition);
             }
-            return;
-        }
 
-        // DEBUG: Log the items in the slots
-        landfallmagic.LOGGER.info("Input 1: " + input1.getItem());
-        landfallmagic.LOGGER.info("Input 2: " + input2.getItem());
+            ItemStack input1 = itemHandler.getStackInSlot(0);
+            ItemStack input2 = itemHandler.getStackInSlot(1);
 
-
-        // --- Recipe Checking ---
-        Optional<Spell> resultSpell = Optional.empty();
-
-        // Check Tier 2 recipes first in both orientations
-        resultSpell = findTier2Recipe(input1, input2).map(Tier2SpellRecipe::getResult);
-        if (resultSpell.isEmpty()) {
-            resultSpell = findTier2Recipe(input2, input1).map(Tier2SpellRecipe::getResult);
-        }
-
-        // If no Tier 2 recipe was found, check for Tier 1
-        if (resultSpell.isEmpty()) {
-            resultSpell = findTier1Recipe(input1, input2).map(Tier1SpellRecipe::getResult);
-        }
-
-        // --- Crafting ---
-        if (resultSpell.isPresent()) {
-            landfallmagic.LOGGER.info("Recipe found! Result: " + resultSpell.get().name);
-            ItemStack resultStack = new ItemStack(ModItems.SPELL_PAGE.get());
-            SpellPageItem.setSpell(resultStack, resultSpell.get());
-
-            // Check if we already crafted this and it's sitting in the output
-            if (!ItemStack.isSameItemSameComponents(itemHandler.getStackInSlot(2), resultStack)) {
-                itemHandler.setStackInSlot(2, resultStack); // Set the output
-                setChanged(); // Mark the block entity as dirty
+            // Debug slot contents when items are present
+            if (tickCounter % 20 == 0 && (!input1.isEmpty() || !input2.isEmpty())) {
+                landfallmagic.LOGGER.info("=== RESEARCH TABLE STATUS ===");
+                landfallmagic.LOGGER.info("Slot 0: {} ({})", input1.isEmpty() ? "EMPTY" : input1.getItem().toString(), input1.getCount());
+                landfallmagic.LOGGER.info("Slot 1: {} ({})", input2.isEmpty() ? "EMPTY" : input2.getItem().toString(), input2.getCount());
+                landfallmagic.LOGGER.info("Slot 2: {} ({})", itemHandler.getStackInSlot(2).isEmpty() ? "EMPTY" : itemHandler.getStackInSlot(2).getItem().toString(), itemHandler.getStackInSlot(2).getCount());
             }
-        } else {
-            landfallmagic.LOGGER.info("No matching recipe found.");
-            if (!itemHandler.getStackInSlot(2).isEmpty()) {
-                itemHandler.setStackInSlot(2, ItemStack.EMPTY); // Clear output if recipe is no longer valid
+
+            // Clear output if inputs are empty
+            if (input1.isEmpty() || input2.isEmpty()) {
+                if (!itemHandler.getStackInSlot(2).isEmpty()) {
+                    landfallmagic.LOGGER.info("Clearing output - inputs are empty");
+                    itemHandler.setStackInSlot(2, ItemStack.EMPTY);
+                    setChanged();
+                }
+                return;
             }
-        }
-    }
 
-    private Optional<Tier1SpellRecipe> findTier1Recipe(ItemStack input1, ItemStack input2) {
-        if (input1.getItem() instanceof RuneItem rune1 && input2.getItem() instanceof RuneItem rune2) {
-            SpellForm form = (rune1.getForm() != null) ? rune1.getForm() : rune2.getForm();
-            SpellElement element = (rune1.getElement() != null) ? rune1.getElement() : rune2.getElement();
-
-            if (form != null && element != null) {
-                landfallmagic.LOGGER.info("Checking Tier 1 Recipe for Form: " + form + ", Element: " + element);
-                return SpellRecipeRegistry.findTier1Recipe(form, element);
+            // Check if both inputs are runes
+            if (!(input1.getItem() instanceof RuneItem) || !(input2.getItem() instanceof RuneItem)) {
+                if (tickCounter % 20 == 0) {
+                    landfallmagic.LOGGER.info("Skipping - not both RuneItems. Input1: {}, Input2: {}",
+                            input1.getItem().getClass().getSimpleName(),
+                            input2.getItem().getClass().getSimpleName());
+                }
+                return;
             }
-        }
-        return Optional.empty();
-    }
 
-    private Optional<Tier2SpellRecipe> findTier2Recipe(ItemStack potentialSpellPage, ItemStack potentialAugment) {
-        if (potentialSpellPage.getItem() instanceof SpellPageItem && potentialAugment.getItem() instanceof RuneItem augmentRune) {
-            Spell baseSpell = SpellPageItem.getSpell(potentialSpellPage);
-            SpellElement augment = augmentRune.getElement();
+            RuneItem rune1 = (RuneItem) input1.getItem();
+            RuneItem rune2 = (RuneItem) input2.getItem();
 
-            if (baseSpell != null && augment != null) {
-                landfallmagic.LOGGER.info("Checking Tier 2 Recipe for Base Spell: " + baseSpell.name + ", Augment: " + augment);
-                return SpellRecipeRegistry.findTier2Recipe(baseSpell, augment);
+            if (tickCounter % 20 == 0) {
+                landfallmagic.LOGGER.info("Processing runes:");
+                landfallmagic.LOGGER.info("  Rune1 - Form: {}, Element: {}", rune1.getForm(), rune1.getElement());
+                landfallmagic.LOGGER.info("  Rune2 - Form: {}, Element: {}", rune2.getForm(), rune2.getElement());
             }
+
+            // Find form and element from the two runes
+            SpellForm form = null;
+            SpellElement element = null;
+
+            if (rune1.getForm() != null && rune2.getElement() != null) {
+                form = rune1.getForm();
+                element = rune2.getElement();
+            } else if (rune1.getElement() != null && rune2.getForm() != null) {
+                form = rune2.getForm();
+                element = rune1.getElement();
+            }
+
+            if (form == null || element == null) {
+                if (tickCounter % 20 == 0) {
+                    landfallmagic.LOGGER.info("Invalid combination - need exactly one form and one element");
+                    landfallmagic.LOGGER.info("  Combined - Form: {}, Element: {}", form, element);
+                }
+                return;
+            }
+
+            // Try to find a Tier 1 recipe - wrap in try-catch
+            Optional<Tier1SpellRecipe> recipe = Optional.empty();
+            try {
+                landfallmagic.LOGGER.info("Attempting to find recipe for Form: {}, Element: {}", form, element);
+                recipe = SpellRecipeRegistry.findTier1Recipe(form, element);
+                landfallmagic.LOGGER.info("Recipe search completed. Found: {}", recipe.isPresent());
+            } catch (Exception e) {
+                landfallmagic.LOGGER.error("Error finding recipe: ", e);
+                return;
+            }
+
+            if (recipe.isPresent()) {
+                try {
+                    Spell resultSpell = recipe.get().getResult();
+                    landfallmagic.LOGGER.info("RECIPE FOUND: {} + {} = {}", form, element, resultSpell.name);
+
+                    // Check if ModItems.SPELL_PAGE is not null
+                    if (ModItems.SPELL_PAGE == null || ModItems.SPELL_PAGE.get() == null) {
+                        landfallmagic.LOGGER.error("ModItems.SPELL_PAGE is null!");
+                        return;
+                    }
+
+                    landfallmagic.LOGGER.info("Creating ItemStack with SPELL_PAGE item");
+                    ItemStack resultStack = new ItemStack(ModItems.SPELL_PAGE.get());
+                    landfallmagic.LOGGER.info("ItemStack created successfully: {}", resultStack);
+
+                    landfallmagic.LOGGER.info("Setting spell on ItemStack: {}", resultSpell.name);
+                    SpellPageItem.setSpell(resultStack, resultSpell);
+                    landfallmagic.LOGGER.info("Spell set successfully");
+
+                    // Verify the spell was set
+                    Spell verifySpell = SpellPageItem.getSpell(resultStack);
+                    landfallmagic.LOGGER.info("Spell verification: {}", verifySpell != null ? verifySpell.name : "NULL");
+
+                    // Only update if the result has changed
+                    if (!ItemStack.isSameItemSameComponents(itemHandler.getStackInSlot(2), resultStack)) {
+                        landfallmagic.LOGGER.info("Placing result in output slot");
+                        itemHandler.setStackInSlot(2, resultStack);
+                        setChanged();
+                        landfallmagic.LOGGER.info("Result placed successfully: {}", resultSpell.name);
+                    } else {
+                        landfallmagic.LOGGER.info("Result already in slot, no update needed");
+                    }
+
+                } catch (Exception e) {
+                    landfallmagic.LOGGER.error("Error creating result item: ", e);
+                    e.printStackTrace();
+                }
+
+            } else {
+                if (tickCounter % 20 == 0) {
+                    landfallmagic.LOGGER.info("NO RECIPE FOUND for Form: {}, Element: {}", form, element);
+                }
+
+                // Clear output if no valid recipe
+                if (!itemHandler.getStackInSlot(2).isEmpty()) {
+                    itemHandler.setStackInSlot(2, ItemStack.EMPTY);
+                    setChanged();
+                    if (tickCounter % 20 == 0) {
+                        landfallmagic.LOGGER.info("Output slot cleared - no valid recipe");
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            landfallmagic.LOGGER.error("Critical error in ResearchTableBlockEntity.tick(): ", e);
+            e.printStackTrace();
         }
-        return Optional.empty();
     }
 }
