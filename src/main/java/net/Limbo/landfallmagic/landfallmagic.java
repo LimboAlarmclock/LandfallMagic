@@ -73,6 +73,7 @@ public class landfallmagic {
     public landfallmagic(IEventBus modEventBus, ModContainer modContainer) {
         ModArmorMaterials.VERDANT.getDelegate();
 
+        ModParticles.PARTICLE_TYPES.register(modEventBus);
         ModItems.ITEMS.register(modEventBus);
         ModBlocks.BLOCKS.register(modEventBus);
         ModBlocks.ITEMS.register(modEventBus);
