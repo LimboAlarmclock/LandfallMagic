@@ -16,6 +16,7 @@ import net.Limbo.landfallmagic.worldgen.ModFeatures;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.SpawnPlacementTypes;
@@ -48,7 +49,6 @@ import org.slf4j.Logger;
 import net.Limbo.landfallmagic.ModBlockEntities;
 import net.Limbo.landfallmagic.spell.SpellRecipeRegistry;
 import net.Limbo.landfallmagic.datagen.ModDataComponents;
-import net.neoforged.neoforge.registries.RegisterEvent;
 
 import java.util.Optional;
 
@@ -86,8 +86,7 @@ public class landfallmagic {
         ModDataComponents.DATA_COMPONENTS.register(modEventBus);
         net.Limbo.landfallmagic.menu.ModMenuTypes.MENUS.register(modEventBus);
 
-        ModDataSerializers.register();
-
+        // Register the data serializers properly
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::registerPackets);
         modEventBus.addListener(this::registerSpawnPlacements);
@@ -98,8 +97,17 @@ public class landfallmagic {
         modContainer.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
     }
 
+    // Helper method for creating ResourceLocation
+    public static ResourceLocation modLoc(String path) {
+        return ResourceLocation.fromNamespaceAndPath(MODID, path);
+    }
+
     private void commonSetup(FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
+            // Register data serializers first
+            ModDataSerializers.register();
+
+            // Then register other systems
             SpellRecipeRegistry.registerRecipes();
             SpellEffectRegistry.registerSpellEffects();
         });

@@ -24,54 +24,83 @@ public class SpellPageItem extends Item {
     @Override
     public InteractionResultHolder<ItemStack> use(Level pLevel, Player pPlayer, InteractionHand pUsedHand) {
         ItemStack itemStack = pPlayer.getItemInHand(pUsedHand);
+
+        // DEBUG: Log that the method was called
+        landfallmagic.LOGGER.info("SpellPageItem.use() called on {} side", pLevel.isClientSide ? "CLIENT" : "SERVER");
+
         Spell spell = getSpell(itemStack);
 
-        if (spell != null) {
-            if (!pLevel.isClientSide) {
-                // Get the spell's effects from our new registry
-                SpellEffectRegistry.SpellEffects effects = SpellEffectRegistry.getEffectsFor(spell);
-
-                if (effects != null) {
-                    // This handles all projectile spells now!
-                    if (spell.form() == SpellForm.PROJECTILE) {
-                        castProjectile(pLevel, pPlayer, itemStack, spell, effects);
-                    }
-                    // We can add handlers for other forms like SELF, ZONE, etc. here later
-                    else {
-                        pPlayer.sendSystemMessage(Component.literal("This spell form has not yet been implemented!"));
-                    }
-                } else {
-                    pPlayer.sendSystemMessage(Component.literal("This spell has no defined effect!"));
-                }
-            }
-            return InteractionResultHolder.sidedSuccess(itemStack, pLevel.isClientSide());
+        // DEBUG: Log spell retrieval result
+        if (spell == null) {
+            landfallmagic.LOGGER.error("No spell found on spell page item!");
+            pPlayer.sendSystemMessage(Component.literal("DEBUG: No spell data found on this item!"));
+            return InteractionResultHolder.fail(itemStack);
+        } else {
+            landfallmagic.LOGGER.info("Found spell: {} (Form: {}, Element: {})",
+                    spell.name(), spell.form(), spell.primaryElement());
         }
-        return InteractionResultHolder.fail(itemStack);
+
+        if (!pLevel.isClientSide) {
+            // Get the spell's effects from our new registry
+            SpellEffectRegistry.SpellEffects effects = SpellEffectRegistry.getEffectsFor(spell);
+
+            if (effects != null) {
+                landfallmagic.LOGGER.info("Found spell effects for: {}", spell.name());
+
+                // This handles all projectile spells now!
+                if (spell.form() == SpellForm.PROJECTILE) {
+                    landfallmagic.LOGGER.info("Casting projectile spell: {}", spell.name());
+                    castProjectile(pLevel, pPlayer, itemStack, spell, effects);
+                }
+                // We can add handlers for other forms like SELF, ZONE, etc. here later
+                else {
+                    landfallmagic.LOGGER.info("Spell form {} not yet implemented", spell.form());
+                    pPlayer.sendSystemMessage(Component.literal("This spell form (" + spell.form() + ") has not yet been implemented!"));
+                }
+            } else {
+                landfallmagic.LOGGER.error("No spell effects found for: {}", spell.name());
+                pPlayer.sendSystemMessage(Component.literal("This spell (" + spell.name() + ") has no defined effect!"));
+            }
+        }
+        return InteractionResultHolder.sidedSuccess(itemStack, pLevel.isClientSide());
     }
 
     private void castProjectile(Level level, Player player, ItemStack stack, Spell spell, SpellEffectRegistry.SpellEffects effects) {
-        // Play the casting sound defined in the registry
-        level.playSound(null, player.getX(), player.getY(), player.getZ(), effects.castSound(), SoundSource.PLAYERS, 0.7F, 1.2F);
+        landfallmagic.LOGGER.info("castProjectile called for spell: {}", spell.name());
 
-        // Spawn the generic projectile and give it the spell data
-        SpellProjectileEntity projectile = new SpellProjectileEntity(level, player, spell);
-        projectile.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0F, 1.5F, 1.0F);
-        level.addFreshEntity(projectile);
+        try {
+            // Play the casting sound defined in the registry
+            level.playSound(null, player.getX(), player.getY(), player.getZ(), effects.castSound(), SoundSource.PLAYERS, 0.7F, 1.2F);
 
-        // Add a cooldown
-        player.getCooldowns().addCooldown(this, 20); // 1 second cooldown
+            // Spawn the generic projectile and give it the spell data
+            SpellProjectileEntity projectile = new SpellProjectileEntity(level, player, spell);
+            projectile.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0F, 1.5F, 1.0F);
+            level.addFreshEntity(projectile);
+
+            landfallmagic.LOGGER.info("Successfully spawned projectile for spell: {}", spell.name());
+
+            // Add a cooldown
+            player.getCooldowns().addCooldown(this, 20); // 1 second cooldown
+        } catch (Exception e) {
+            landfallmagic.LOGGER.error("Error casting projectile spell: ", e);
+            player.sendSystemMessage(Component.literal("Error casting spell: " + e.getMessage()));
+        }
     }
-
-    // REMOVE the old castIgnitionBolt() and castRockThrow() methods
 
     public static void setSpell(ItemStack stack, Spell spell) {
         try {
-            if (spell == null || stack == null || stack.isEmpty()) return;
+            if (spell == null || stack == null || stack.isEmpty()) {
+                landfallmagic.LOGGER.error("Cannot set spell - null parameters: spell={}, stack={}", spell, stack);
+                return;
+            }
+
             if (ModDataComponents.SPELL == null || ModDataComponents.SPELL.get() == null) {
                 landfallmagic.LOGGER.error("ModDataComponents.SPELL is null! Cannot set spell data.");
                 return;
             }
+
             stack.set(ModDataComponents.SPELL.get(), spell);
+            landfallmagic.LOGGER.info("Successfully set spell {} on item stack", spell.name());
         } catch (Exception e) {
             landfallmagic.LOGGER.error("Error in SpellPageItem.setSpell: ", e);
         }
@@ -79,12 +108,23 @@ public class SpellPageItem extends Item {
 
     public static Spell getSpell(ItemStack stack) {
         try {
-            if (stack == null || stack.isEmpty()) return null;
+            if (stack == null || stack.isEmpty()) {
+                landfallmagic.LOGGER.debug("Cannot get spell - stack is null or empty");
+                return null;
+            }
+
             if (ModDataComponents.SPELL == null || ModDataComponents.SPELL.get() == null) {
                 landfallmagic.LOGGER.error("ModDataComponents.SPELL is null! Cannot get spell data.");
                 return null;
             }
-            return stack.get(ModDataComponents.SPELL.get());
+
+            Spell spell = stack.get(ModDataComponents.SPELL.get());
+            if (spell != null) {
+                landfallmagic.LOGGER.debug("Successfully retrieved spell: {}", spell.name());
+            } else {
+                landfallmagic.LOGGER.debug("No spell data found on item stack");
+            }
+            return spell;
         } catch (Exception e) {
             landfallmagic.LOGGER.error("Error in SpellPageItem.getSpell: ", e);
             return null;

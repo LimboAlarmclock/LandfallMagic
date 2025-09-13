@@ -5,6 +5,7 @@ import net.Limbo.landfallmagic.entity.sorcerery.SpellProjectileEntity;
 import net.Limbo.landfallmagic.spell.Spell;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -12,6 +13,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 
 import java.util.HashMap;
@@ -111,7 +113,7 @@ public class SpellEffectRegistry {
                 }
         ));
 
-        // Register Binding Shot
+        // Register Binding Shot - FIXED VERSION
         spellEffectMap.put("Binding Shot", new SpellEffects(
                 SoundEvents.LEASH_KNOT_PLACE,
                 ParticleTypes.ENCHANTED_HIT, // This is just for the projectile itself
@@ -121,19 +123,10 @@ public class SpellEffectRegistry {
                         // Apply the slowness effect on the server
                         if (!level.isClientSide) {
                             livingEntity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 2));
-                        }
 
-                        // Spawn the custom tendril particles on the client
-                        if (level.isClientSide) {
-                            for (int i = 0; i < 15; i++) { // Spawn 15 particles
-                                double d0 = level.random.nextGaussian() * 0.1;
-                                double d1 = level.random.nextGaussian() * 0.1;
-                                double d2 = level.random.nextGaussian() * 0.1;
-                                level.addParticle(ModParticles.TENDRIL_PARTICLE.get(),
-                                        livingEntity.getRandomX(0.8D),
-                                        livingEntity.getRandomY(),
-                                        livingEntity.getRandomZ(0.8D),
-                                        d0, d1, d2);
+                            // Spawn particles using ServerLevel.sendParticles for proper network sync
+                            if (level instanceof ServerLevel serverLevel) {
+                                spawnBindingTendrilsAroundEntity(serverLevel, livingEntity);
                             }
                         }
                     }
@@ -174,6 +167,67 @@ public class SpellEffectRegistry {
                     }
                 }
         ));
+    }
+
+    // Helper method to spawn binding tendrils around an entity properly
+    private static void spawnBindingTendrilsAroundEntity(ServerLevel serverLevel, LivingEntity target) {
+        // Get entity bounding box for proper coverage
+        AABB boundingBox = target.getBoundingBox();
+
+        // Calculate entity dimensions
+        double entityWidth = Math.max(boundingBox.getXsize(), 0.6); // Minimum width
+        double entityHeight = Math.max(boundingBox.getYsize(), 1.0); // Minimum height
+        double entityDepth = Math.max(boundingBox.getZsize(), 0.6); // Minimum depth
+
+        // Entity center position
+        double centerX = target.getX();
+        double centerY = target.getY() + entityHeight * 0.5; // Middle height
+        double centerZ = target.getZ();
+
+        // Spawn particles in a helix/binding pattern around the entity
+        int helixPoints = 25; // More points for better coverage
+        double maxRadius = Math.max(entityWidth, entityDepth) * 0.8;
+
+        for (int i = 0; i < helixPoints; i++) {
+            // Create helix pattern
+            double angle = (i * Math.PI * 3) / helixPoints; // 1.5 full rotations
+            double heightRatio = (double)i / helixPoints;
+            double radius = maxRadius * (0.5 + 0.5 * Math.sin(heightRatio * Math.PI)); // Varying radius
+
+            double offsetX = Math.cos(angle) * radius;
+            double offsetZ = Math.sin(angle) * radius;
+            double offsetY = (heightRatio * entityHeight) - (entityHeight * 0.5); // Center on entity
+
+            double particleX = centerX + offsetX;
+            double particleY = centerY + offsetY;
+            double particleZ = centerZ + offsetZ;
+
+            // Small inward velocity to make tendrils appear to "grip" the entity
+            double velX = -offsetX * 0.02;
+            double velY = serverLevel.random.nextGaussian() * 0.02;
+            double velZ = -offsetZ * 0.02;
+
+            serverLevel.sendParticles(
+                    ModParticles.TENDRIL_PARTICLE.get(),
+                    particleX, particleY, particleZ,
+                    1, // particle count per spawn point
+                    velX, velY, velZ, // velocity
+                    0.03 // speed multiplier
+            );
+        }
+
+        // Add some random particles for extra visual effect
+        for (int i = 0; i < 10; i++) {
+            double randomX = centerX + (serverLevel.random.nextDouble() - 0.5) * entityWidth * 1.2;
+            double randomY = centerY + (serverLevel.random.nextDouble() - 0.5) * entityHeight * 1.2;
+            double randomZ = centerZ + (serverLevel.random.nextDouble() - 0.5) * entityDepth * 1.2;
+
+            serverLevel.sendParticles(
+                    ModParticles.TENDRIL_PARTICLE.get(),
+                    randomX, randomY, randomZ,
+                    1, 0, 0, 0, 0
+            );
+        }
     }
 
     public static SpellEffects getEffectsFor(Spell spell) {

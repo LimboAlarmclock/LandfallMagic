@@ -5,7 +5,12 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.syncher.EntityDataSerializer;
 import net.minecraft.network.syncher.EntityDataSerializers;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
+import net.neoforged.neoforge.registries.RegisterEvent;
 
+@EventBusSubscriber(modid = landfallmagic.MODID, bus = EventBusSubscriber.Bus.MOD)
 public class ModDataSerializers {
 
     // EntityDataSerializer implementation - only implement required methods
@@ -28,15 +33,23 @@ public class ModDataSerializers {
         }
     };
 
+    @SubscribeEvent
+    public static void registerSerializers(RegisterEvent event) {
+        if (event.getRegistryKey().equals(NeoForgeRegistries.Keys.ENTITY_DATA_SERIALIZERS)) {
+            landfallmagic.LOGGER.info("Registering EntityDataSerializer for Spell");
+            event.register(NeoForgeRegistries.Keys.ENTITY_DATA_SERIALIZERS,
+                    helper -> helper.register(landfallmagic.modLoc("spell"), SPELL_SERIALIZER));
+        }
+    }
 
-    // Simple registration method
+    // Backup registration method - call this if the event-based registration doesn't work
     public static void register() {
         try {
-            // Try to register with EntityDataSerializers
+            // Try to register with EntityDataSerializers directly
             EntityDataSerializers.registerSerializer(SPELL_SERIALIZER);
+            landfallmagic.LOGGER.info("Successfully registered SPELL_SERIALIZER via direct registration");
         } catch (Exception e) {
-            // If registration fails, just log and continue - static access will still work
-            System.out.println("EntityDataSerializer registration method not available - using static access only");
+            landfallmagic.LOGGER.error("Failed to register EntityDataSerializer: ", e);
         }
     }
 }
