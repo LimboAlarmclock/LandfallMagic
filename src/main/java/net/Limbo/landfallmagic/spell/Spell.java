@@ -2,7 +2,10 @@ package net.Limbo.landfallmagic.spell;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 
 import java.util.Optional;
 
@@ -15,7 +18,20 @@ public record Spell(SpellForm form, SpellElement primaryElement, SpellElement au
             Codec.STRING.fieldOf("name").forGetter(Spell::name)
     ).apply(instance, (form, primary, augment, name) -> new Spell(form, primary, augment.orElse(null), name)));
 
-    // Constructor for Tier 1 Spells (without augment)
+    // THIS IS THE CORRECTED CODEC
+    // We manually define how to read/write each part of the spell to the network buffer.
+    public static final StreamCodec<FriendlyByteBuf, Spell> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.STRING_UTF8.map(SpellForm::valueOf, SpellForm::name),
+            Spell::form,
+            ByteBufCodecs.STRING_UTF8.map(SpellElement::valueOf, SpellElement::name),
+            Spell::primaryElement,
+            ByteBufCodecs.optional(ByteBufCodecs.STRING_UTF8.map(SpellElement::valueOf, SpellElement::name)),
+            spell -> Optional.ofNullable(spell.augmentElement),
+            ByteBufCodecs.STRING_UTF8,
+            Spell::name,
+            (form, primary, augment, name) -> new Spell(form, primary, augment.orElse(null), name)
+    );
+
     public Spell(SpellForm form, SpellElement primaryElement, String name) {
         this(form, primaryElement, null, name);
     }

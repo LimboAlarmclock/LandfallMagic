@@ -44,8 +44,6 @@ public class ClientEvents {
     public static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.DIRE_WOLF.get(), DireWolfRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.KARMA_CONDENSER_BE.get(), KarmaCondenserRenderer::new);
-        event.registerEntityRenderer(ModEntities.IGNITION_BOLT.get(), ThrownItemRenderer::new);
-
     }
 
     @SubscribeEvent

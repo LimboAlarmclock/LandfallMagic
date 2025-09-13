@@ -1,11 +1,12 @@
 package net.Limbo.landfallmagic.item;
 
 import net.Limbo.landfallmagic.datagen.ModDataComponents;
-import net.Limbo.landfallmagic.entity.sorcerery.FireballProjectileEntity;
+import net.Limbo.landfallmagic.entity.sorcerery.SpellProjectileEntity;
 import net.Limbo.landfallmagic.landfallmagic;
 import net.Limbo.landfallmagic.spell.Spell;
+import net.Limbo.landfallmagic.spell.SpellForm;
+import net.Limbo.landfallmagic.spell.effect.SpellEffectRegistry;
 import net.minecraft.network.chat.Component;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -27,15 +28,20 @@ public class SpellPageItem extends Item {
 
         if (spell != null) {
             if (!pLevel.isClientSide) {
-                // We'll use the spell's unique name to decide what to do
-                switch (spell.name()) {
-                    case "Ignition Bolt":
-                        castIgnitionBolt(pLevel, pPlayer, itemStack);
-                        break;
-                    // You can add more cases for other spells here later
-                    default:
-                        pPlayer.sendSystemMessage(Component.literal("This spell has not yet been implemented!"));
-                        break;
+                // Get the spell's effects from our new registry
+                SpellEffectRegistry.SpellEffects effects = SpellEffectRegistry.getEffectsFor(spell);
+
+                if (effects != null) {
+                    // This handles all projectile spells now!
+                    if (spell.form() == SpellForm.PROJECTILE) {
+                        castProjectile(pLevel, pPlayer, itemStack, spell, effects);
+                    }
+                    // We can add handlers for other forms like SELF, ZONE, etc. here later
+                    else {
+                        pPlayer.sendSystemMessage(Component.literal("This spell form has not yet been implemented!"));
+                    }
+                } else {
+                    pPlayer.sendSystemMessage(Component.literal("This spell has no defined effect!"));
                 }
             }
             return InteractionResultHolder.sidedSuccess(itemStack, pLevel.isClientSide());
@@ -43,18 +49,20 @@ public class SpellPageItem extends Item {
         return InteractionResultHolder.fail(itemStack);
     }
 
-    private void castIgnitionBolt(Level level, Player player, ItemStack stack) {
-        // Play a casting sound
-        level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.GHAST_SHOOT, SoundSource.PLAYERS, 0.5F, 1.0F);
+    private void castProjectile(Level level, Player player, ItemStack stack, Spell spell, SpellEffectRegistry.SpellEffects effects) {
+        // Play the casting sound defined in the registry
+        level.playSound(null, player.getX(), player.getY(), player.getZ(), effects.castSound(), SoundSource.PLAYERS, 0.7F, 1.2F);
 
-        // Spawn the projectile
-        FireballProjectileEntity fireball = new FireballProjectileEntity(level, player);
-        fireball.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0F, 1.5F, 1.0F);
-        level.addFreshEntity(fireball);
+        // Spawn the generic projectile and give it the spell data
+        SpellProjectileEntity projectile = new SpellProjectileEntity(level, player, spell);
+        projectile.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0F, 1.5F, 1.0F);
+        level.addFreshEntity(projectile);
 
-        // Add a cooldown to the item
-        player.getCooldowns().addCooldown(this, 20); // 20 ticks = 1 second cooldown
+        // Add a cooldown
+        player.getCooldowns().addCooldown(this, 20); // 1 second cooldown
     }
+
+    // REMOVE the old castIgnitionBolt() and castRockThrow() methods
 
     public static void setSpell(ItemStack stack, Spell spell) {
         try {

@@ -11,6 +11,7 @@ import net.Limbo.landfallmagic.network.S2CKarmaUpdatePacket;
 import net.Limbo.landfallmagic.spell.SpellElement;
 import net.Limbo.landfallmagic.spell.SpellForm;
 import net.Limbo.landfallmagic.spell.Tier1SpellRecipe;
+import net.Limbo.landfallmagic.spell.effect.SpellEffectRegistry;
 import net.Limbo.landfallmagic.worldgen.ModFeatures;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
@@ -47,6 +48,7 @@ import org.slf4j.Logger;
 import net.Limbo.landfallmagic.ModBlockEntities;
 import net.Limbo.landfallmagic.spell.SpellRecipeRegistry;
 import net.Limbo.landfallmagic.datagen.ModDataComponents;
+import net.neoforged.neoforge.registries.RegisterEvent;
 
 import java.util.Optional;
 
@@ -69,6 +71,8 @@ public class landfallmagic {
                     }).build());
 
     public landfallmagic(IEventBus modEventBus, ModContainer modContainer) {
+        ModArmorMaterials.VERDANT.getDelegate();
+
         ModItems.ITEMS.register(modEventBus);
         ModBlocks.BLOCKS.register(modEventBus);
         ModBlocks.ITEMS.register(modEventBus);
@@ -79,16 +83,9 @@ public class landfallmagic {
         ModBlockEntities.BLOCK_ENTITIES.register(modEventBus);
         ModAttachments.ATTACHMENT_TYPES.register(modEventBus);
         ModDataComponents.DATA_COMPONENTS.register(modEventBus);
-
         net.Limbo.landfallmagic.menu.ModMenuTypes.MENUS.register(modEventBus);
 
-        // This line will fix the crash by loading the ModArmorMaterials class early
-        try {
-            Class.forName("net.Limbo.landfallmagic.ModArmorMaterials");
-        } catch (ClassNotFoundException e) {
-            LOGGER.error("Could not find ModArmorMaterials class", e);
-        }
-
+        ModDataSerializers.register();
 
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::registerPackets);
@@ -97,32 +94,13 @@ public class landfallmagic {
         NeoForge.EVENT_BUS.register(new ServerEvents());
 
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
-        // This is the line that was moved from ClientEvents.java
         modContainer.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
-            // Register recipes
             SpellRecipeRegistry.registerRecipes();
-
-            // Debug recipe registration
-            landfallmagic.LOGGER.info("=== RECIPE REGISTRATION DEBUG ===");
-
-            // Test a few specific recipes
-            Optional<Tier1SpellRecipe> fireballRecipe = SpellRecipeRegistry.findTier1Recipe(SpellForm.PROJECTILE, SpellElement.FIRE);
-            landfallmagic.LOGGER.info("Fireball recipe exists: {}", fireballRecipe.isPresent());
-            if (fireballRecipe.isPresent()) {
-                landfallmagic.LOGGER.info("  Result: {}", fireballRecipe.get().getResult().name());
-            }
-
-            Optional<Tier1SpellRecipe> stoneSkinRecipe = SpellRecipeRegistry.findTier1Recipe(SpellForm.SELF, SpellElement.EARTH);
-            landfallmagic.LOGGER.info("Stone Skin recipe exists: {}", stoneSkinRecipe.isPresent());
-            if (stoneSkinRecipe.isPresent()) {
-                landfallmagic.LOGGER.info("  Result: {}", stoneSkinRecipe.get().getResult().name());
-            }
-
-            landfallmagic.LOGGER.info("=== END RECIPE DEBUG ===");
+            SpellEffectRegistry.registerSpellEffects();
         });
         LOGGER.info("HELLO FROM LANDFALL MAGIC COMMON SETUP");
     }

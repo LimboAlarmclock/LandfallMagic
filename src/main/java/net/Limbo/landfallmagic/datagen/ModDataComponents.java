@@ -8,15 +8,17 @@ import net.minecraft.world.item.component.ItemContainerContents;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
-import java.util.function.UnaryOperator;
-
 public class ModDataComponents {
     public static final DeferredRegister<DataComponentType<?>> DATA_COMPONENTS =
             DeferredRegister.create(Registries.DATA_COMPONENT_TYPE, landfallmagic.MODID);
 
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Spell>> SPELL =
             DATA_COMPONENTS.register("spell", () ->
-                    DataComponentType.<Spell>builder().persistent(Spell.CODEC).build());
+                    DataComponentType.<Spell>builder()
+                            .persistent(Spell.CODEC)
+                            .networkSynchronized(Spell.STREAM_CODEC) // <-- ADD THIS
+                            .build());
+
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<ItemContainerContents>> GRIMOIRE_CONTENTS =
             DATA_COMPONENTS.register("grimoire_contents", () ->
                     DataComponentType.<ItemContainerContents>builder()
