@@ -120,8 +120,6 @@ public class SpellPageItem extends Item {
 
             Spell spell = stack.get(ModDataComponents.SPELL.get());
             if (spell != null) {
-                landfallmagic.LOGGER.debug("Successfully retrieved spell: {}", spell.name());
-            } else {
                 landfallmagic.LOGGER.debug("No spell data found on item stack");
             }
             return spell;

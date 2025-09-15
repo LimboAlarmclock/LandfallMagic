@@ -1,6 +1,7 @@
 package net.Limbo.landfallmagic;
 
 import com.mojang.logging.LogUtils;
+import net.Limbo.landfallmagic.entity.BindingTendrilsEntity;
 import net.Limbo.landfallmagic.entity.DireWolfEntity;
 import net.Limbo.landfallmagic.karma.KarmaCapability;
 import net.Limbo.landfallmagic.karma.KarmaCommands;
@@ -86,7 +87,6 @@ public class landfallmagic {
         ModDataComponents.DATA_COMPONENTS.register(modEventBus);
         net.Limbo.landfallmagic.menu.ModMenuTypes.MENUS.register(modEventBus);
 
-        // Register the data serializers properly
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::registerPackets);
         modEventBus.addListener(this::registerSpawnPlacements);
@@ -97,17 +97,13 @@ public class landfallmagic {
         modContainer.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
     }
 
-    // Helper method for creating ResourceLocation
     public static ResourceLocation modLoc(String path) {
         return ResourceLocation.fromNamespaceAndPath(MODID, path);
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
-            // Register data serializers first
             ModDataSerializers.register();
-
-            // Then register other systems
             SpellRecipeRegistry.registerRecipes();
             SpellEffectRegistry.registerSpellEffects();
         });

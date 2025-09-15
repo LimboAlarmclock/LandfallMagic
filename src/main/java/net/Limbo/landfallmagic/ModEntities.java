@@ -1,6 +1,7 @@
 
 package net.Limbo.landfallmagic;
 
+import net.Limbo.landfallmagic.entity.BindingTendrilsEntity;
 import net.Limbo.landfallmagic.entity.DireWolfEntity;
 import net.Limbo.landfallmagic.entity.sorcerery.SpellProjectileEntity;
 import net.minecraft.world.entity.EntityType;
@@ -23,4 +24,10 @@ public class ModEntities {
                             .sized(0.25F, 0.25F)
                             .clientTrackingRange(4).updateInterval(10)
                             .build("spell_projectile"));
+    public static final DeferredHolder<EntityType<?>, EntityType<BindingTendrilsEntity>> BINDING_TENDRILS =
+            ENTITY_TYPES.register("binding_tendrils",
+                    () -> EntityType.Builder.<BindingTendrilsEntity>of(BindingTendrilsEntity::new, MobCategory.MISC)
+                            .sized(1.5f, 1.5f) // The size of its hitbox for rendering
+                            .clientTrackingRange(8)
+                            .build("binding_tendrils"));
 }

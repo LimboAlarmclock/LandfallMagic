@@ -27,6 +27,8 @@ import org.lwjgl.glfw.GLFW;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import net.Limbo.landfallmagic.particle.TendrilParticle;
 import net.Limbo.landfallmagic.client.renderer.SpellProjectileRenderer;
+import net.Limbo.landfallmagic.client.renderer.BindingTendrilsRenderer;
+
 
 @EventBusSubscriber(modid = landfallmagic.MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ClientEvents {
@@ -47,11 +49,18 @@ public class ClientEvents {
         event.registerEntityRenderer(ModEntities.DIRE_WOLF.get(), DireWolfRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.KARMA_CONDENSER_BE.get(), KarmaCondenserRenderer::new);
         event.registerEntityRenderer(ModEntities.SPELL_PROJECTILE.get(), SpellProjectileRenderer::new);
+        event.registerEntityRenderer(ModEntities.BINDING_TENDRILS.get(), BindingTendrilsRenderer::new);
     }
 
     @SubscribeEvent
     public static void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(ModModelLayers.DIRE_WOLF_LAYER, DireWolfModel::createBodyLayer);
+    }
+
+    // THIS IS THE NEW CODE BLOCK
+    @SubscribeEvent
+    public static void registerParticleProviders(RegisterParticleProvidersEvent event) {
+        event.registerSpriteSet(ModParticles.TENDRIL_PARTICLE.get(), TendrilParticle.Provider::new);
     }
 
     @SubscribeEvent
