@@ -1,7 +1,7 @@
 
 package net.Limbo.landfallmagic;
 
-import net.Limbo.landfallmagic.entity.BindingTendrilsEntity;
+import net.Limbo.landfallmagic.entity.spellentity.BindingTendrilsEntity;
 import net.Limbo.landfallmagic.entity.DireWolfEntity;
 import net.Limbo.landfallmagic.entity.sorcerery.SpellProjectileEntity;
 import net.minecraft.world.entity.EntityType;

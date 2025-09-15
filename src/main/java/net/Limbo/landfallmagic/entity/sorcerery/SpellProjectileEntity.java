@@ -14,6 +14,7 @@ import net.minecraft.world.entity.projectile.ThrowableItemProjectile;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 
@@ -59,15 +60,25 @@ public class SpellProjectileEntity extends ThrowableItemProjectile {
     protected void onHit(HitResult pResult) {
         super.onHit(pResult);
         if (!this.level().isClientSide) {
+            Spell spell = getSpell();
+            SpellEffectRegistry.SpellEffects effects = SpellEffectRegistry.getEffectsFor(spell);
+            if (effects == null) {
+                this.discard();
+                return;
+            }
+
             if (pResult.getType() == HitResult.Type.ENTITY) {
-                SpellEffectRegistry.SpellEffects effects = SpellEffectRegistry.getEffectsFor(getSpell());
-                if (effects != null) {
-                    effects.onHit().accept((EntityHitResult) pResult);
+                effects.onHit().accept((EntityHitResult) pResult);
+            } else if (pResult instanceof BlockHitResult blockHitResult) {
+                if (effects.onBlockHit() != null) {
+                    effects.onBlockHit().accept(this.level(), blockHitResult);
                 }
             }
+
             this.discard();
         }
     }
+
 
     @Override
     protected Item getDefaultItem() {

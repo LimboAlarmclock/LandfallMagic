@@ -1,6 +1,6 @@
 package net.Limbo.landfallmagic.client.model;
 
-import net.Limbo.landfallmagic.entity.BindingTendrilsEntity;
+import net.Limbo.landfallmagic.entity.spellentity.BindingTendrilsEntity;
 import net.Limbo.landfallmagic.landfallmagic;
 import net.minecraft.resources.ResourceLocation;
 import software.bernie.geckolib.model.GeoModel;

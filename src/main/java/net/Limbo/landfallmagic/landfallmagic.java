@@ -1,7 +1,6 @@
 package net.Limbo.landfallmagic;
 
 import com.mojang.logging.LogUtils;
-import net.Limbo.landfallmagic.entity.BindingTendrilsEntity;
 import net.Limbo.landfallmagic.entity.DireWolfEntity;
 import net.Limbo.landfallmagic.karma.KarmaCapability;
 import net.Limbo.landfallmagic.karma.KarmaCommands;
@@ -9,9 +8,6 @@ import net.Limbo.landfallmagic.karma.KarmaNodeBlock;
 import net.Limbo.landfallmagic.magic.ModAttachments;
 import net.Limbo.landfallmagic.network.C2SKarmaRequestPacket;
 import net.Limbo.landfallmagic.network.S2CKarmaUpdatePacket;
-import net.Limbo.landfallmagic.spell.SpellElement;
-import net.Limbo.landfallmagic.spell.SpellForm;
-import net.Limbo.landfallmagic.spell.Tier1SpellRecipe;
 import net.Limbo.landfallmagic.spell.effect.SpellEffectRegistry;
 import net.Limbo.landfallmagic.worldgen.ModFeatures;
 import net.minecraft.core.BlockPos;
@@ -47,11 +43,8 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import org.slf4j.Logger;
-import net.Limbo.landfallmagic.ModBlockEntities;
 import net.Limbo.landfallmagic.spell.SpellRecipeRegistry;
 import net.Limbo.landfallmagic.datagen.ModDataComponents;
-
-import java.util.Optional;
 
 @Mod(landfallmagic.MODID)
 @EventBusSubscriber(modid = landfallmagic.MODID, bus = EventBusSubscriber.Bus.MOD)
